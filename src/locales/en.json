@@ -1,0 +1,28 @@
+{
+    "common": {
+        "welcome": "Welcome to Appalto Smart",
+        "logout": "Logout",
+        "language": "Language",
+        "dashboard": "Dashboard"
+    },
+    "auth": {
+        "login": "Login",
+        "register": "Register",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Submit",
+        "selectRole": "Select Role",
+        "admin": "Administrator",
+        "contractor": "Contractor",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?"
+    },
+    "admin": {
+        "createTender": "Create Tender",
+        "tendersList": "Tenders List"
+    },
+    "contractor": {
+        "activeTenders": "Active Tenders",
+        "myBids": "My Bids"
+    }
+}

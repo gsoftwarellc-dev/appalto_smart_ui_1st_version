@@ -1,0 +1,28 @@
+{
+    "common": {
+        "welcome": "Benvenuto su Appalto Smart",
+        "logout": "Esci",
+        "language": "Lingua",
+        "dashboard": "Dashboard"
+    },
+    "auth": {
+        "login": "Accedi",
+        "register": "Registrati",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Invia",
+        "selectRole": "Seleziona Ruolo",
+        "admin": "Amministratore",
+        "contractor": "Appaltatore",
+        "noAccount": "Non hai un account?",
+        "haveAccount": "Hai già un account?"
+    },
+    "admin": {
+        "createTender": "Crea Appalto",
+        "tendersList": "Lista Appalti"
+    },
+    "contractor": {
+        "activeTenders": "Appalti Attivi",
+        "myBids": "Le Mie Offerte"
+    }
+}
