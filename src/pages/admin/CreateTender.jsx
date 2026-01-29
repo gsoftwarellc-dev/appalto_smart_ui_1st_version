@@ -9,11 +9,18 @@ import { Upload } from 'lucide-react';
 const CreateTender = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    // Calculate default deadline: 15 days from today
+    const getDefaultDeadline = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + 15);
+        return date.toISOString().split('T')[0];
+    };
+
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        deadline: '',
+        deadline: getDefaultDeadline(),
         budget: '',
         location: '',
         urgent: false,
@@ -148,20 +155,27 @@ const CreateTender = () => {
                                     name="deadline"
                                     value={formData.deadline}
                                     onChange={handleChange}
-                                    required
+                                    disabled
+                                    className="bg-gray-100 cursor-not-allowed"
                                 />
+                                <p className="text-xs text-blue-600 mt-1">Fixed duration: 15 days from today</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-2">
                                     Budget (Optional)
                                 </label>
-                                <Input
-                                    type="number"
+                                <select
                                     name="budget"
                                     value={formData.budget}
                                     onChange={handleChange}
-                                    placeholder="€"
-                                />
+                                    className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                >
+                                    <option value="">Select range</option>
+                                    <option value="€0 – €50,000">€0 – €50,000</option>
+                                    <option value="€50,000 – €100,000">€50,000 – €100,000</option>
+                                    <option value="€100,000 – €250,000">€100,000 – €250,000</option>
+                                    <option value="Top than €250,000">Top than €250,000</option>
+                                </select>
                             </div>
                         </div>
 

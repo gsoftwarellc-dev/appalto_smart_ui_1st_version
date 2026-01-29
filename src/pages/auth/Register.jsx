@@ -38,14 +38,14 @@ const Register = () => {
                                 className={`cursor-pointer border rounded-lg p-4 text-center transition-all ${role === 'admin' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600 ring-offset-1' : 'border-gray-200 hover:border-gray-300'}`}
                                 onClick={() => setRole('admin')}
                             >
-                                <div className="font-semibold">{t('auth.admin')}</div>
+                                <div className="font-semibold text-sm">{t('auth.client_role')}<br /><span className="text-xs font-normal text-gray-500">{t('auth.client_sub')}</span></div>
                                 {role === 'admin' && <Check className="mx-auto h-4 w-4 text-blue-600 mt-1" />}
                             </div>
                             <div
                                 className={`cursor-pointer border rounded-lg p-4 text-center transition-all ${role === 'contractor' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600 ring-offset-1' : 'border-gray-200 hover:border-gray-300'}`}
                                 onClick={() => setRole('contractor')}
                             >
-                                <div className="font-semibold">{t('auth.contractor')}</div>
+                                <div className="font-semibold text-sm">{t('auth.company_role')}<br /><span className="text-xs font-normal text-gray-500">{t('auth.company_sub')}</span></div>
                                 {role === 'contractor' && <Check className="mx-auto h-4 w-4 text-blue-600 mt-1" />}
                             </div>
                         </div>
@@ -66,7 +66,7 @@ const Register = () => {
                         </div>
 
                         <Button className="w-full" type="submit" disabled={loading}>
-                            {loading ? 'Creating Account...' : t('auth.register')}
+                            {loading ? t('auth.creating') : t('auth.register')}
                         </Button>
                     </form>
                 </CardContent>

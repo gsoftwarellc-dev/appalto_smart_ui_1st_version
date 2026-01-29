@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { User, MapPin, Briefcase, Mail } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
+import { User, MapPin, Briefcase, Mail, Eye, X, CheckCircle, Star } from 'lucide-react';
 
 const Profile = () => {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
 
     // Mock Profile Data
     const [profile, setProfile] = useState({
@@ -38,7 +40,81 @@ const Profile = () => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight">My Profile</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-bold tracking-tight">My Profile</h2>
+                <Button variant="outline" onClick={() => setShowPreview(true)}>
+                    <Eye className="h-4 w-4 mr-2" /> View Public Profile
+                </Button>
+            </div>
+
+            {/* Public Profile Preview Modal */}
+            {showPreview && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+                        <button
+                            onClick={() => setShowPreview(false)}
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
+                        >
+                            <X className="h-5 w-5 text-gray-500" />
+                        </button>
+
+                        {/* Mock Public Profile Layout */}
+                        <div className="relative h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
+                        <div className="px-8 pb-8">
+                            <div className="relative -mt-16 mb-6 flex justify-between items-end">
+                                <div className="h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden shadow-md">
+                                    {profile.avatar ? (
+                                        <img src={profile.avatar} alt="Profile" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <User className="h-full w-full p-6 text-gray-400" />
+                                    )}
+                                </div>
+                                <div className="mb-2">
+                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                                        <CheckCircle className="h-3 w-3 mr-1" /> Verified Contractor
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                                        {profile.name}
+                                        <div className="flex text-yellow-400">
+                                            <Star className="h-4 w-4 fill-current" />
+                                            <Star className="h-4 w-4 fill-current" />
+                                            <Star className="h-4 w-4 fill-current" />
+                                            <Star className="h-4 w-4 fill-current" />
+                                            <Star className="h-4 w-4 fill-current" />
+                                        </div>
+                                    </h2>
+                                    <p className="text-gray-500 flex items-center gap-2 mt-1">
+                                        <MapPin className="h-4 w-4" /> {profile.location}
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-100">
+                                    <div>
+                                        <p className="text-sm text-gray-500">Expertise</p>
+                                        <p className="font-medium">{profile.expertise}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Member Since</p>
+                                        <p className="font-medium">Jan 2024</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-semibold mb-2">About</h3>
+                                    <p className="text-gray-600 leading-relaxed">{profile.description}</p>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Profile Card */}

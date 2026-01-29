@@ -7,27 +7,78 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
-import { Download, Upload, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import { Download, Upload, ArrowLeft, CheckCircle, Clock, Lock, Info, FileText } from 'lucide-react';
 import Timeline from '../components/ui/Timeline';
 import CountdownTimer from '../components/ui/CountdownTimer';
 
 const TenderDetails = () => {
     const { id } = useParams();
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [isUnlocked, setIsUnlocked] = useState(true);
 
+    const getCreditCost = (budget) => {
+        if (!budget) return 4; // Default lowest
+        if (budget.includes('50,000') && budget.includes('0')) return 4;
+        if (budget.includes('50,000') && budget.includes('100,000')) return 10;
+        if (budget.includes('100,000') && budget.includes('250,000')) return 20;
+        if (budget.includes('250,000')) return 30;
+
+        // Fallback for simple numbers in mock strings (like "€20,000")
+        const num = parseInt(budget.replace(/[^0-9]/g, ''));
+        if (num <= 50000) return 4;
+        if (num <= 100000) return 10;
+        if (num <= 250000) return 20;
+        return 30;
+    };
+
+    // Effect to start as locked for demonstration if ID matches specific mock IDs
+    React.useEffect(() => {
+        if (id === '4' || id === '6' || id === '8') {
+            setIsUnlocked(false);
+        }
+    }, [id]);
+
+    const handleUnlock = () => {
+        const cost = getCreditCost(tender.budget);
+        const currentCredits = user?.credits || 0;
+
+        if (currentCredits < cost) {
+            alert(`Insufficient credits! You need ${cost} credits but have ${currentCredits}. Please purchase a credit package.`);
+            return;
+        }
+
+        const confirm = window.confirm(`Unlock this tender for ${cost} credits? (Balance: ${currentCredits})`);
+        if (confirm) {
+            const updatedUser = { ...user, credits: currentCredits - cost };
+            updateUser(updatedUser);
+            setIsUnlocked(true);
+        }
+    };
+
+    // Mock Tender Data
     // Mock Tender Data
     const tender = {
         id: id,
-        title: "Roof Renovation - Via Roma 5",
+        title: "Roof Renovation", // Generic title
+        category: "Construction & Renovation",
+        address: "Via Roma 5", // Specific address
         description: "Complete replacement of the roof tiles and insulation layer. Area: 500mq.",
         location: "Rome",
         deadline: "2026-02-15",
         status: "Open", // Published, Open, Review, Awarded
         priority: "Standard",
         budget: "€20,000",
-        timelineStep: "Open"
+        timelineStep: "Open",
+        isUnlocked: false, // Default to locked for demonstration logic if id matches locked ones from list
+        boqItems: [
+            { id: 1, description: "Demolition of existing roof tiles", unit: "mq", quantity: 500 },
+            { id: 2, description: "Disposal of debris", unit: "kg", quantity: 2000 },
+            { id: 3, description: "Installation of new insulation layer (10cm)", unit: "mq", quantity: 500 },
+            { id: 4, description: "Supply and installation of new terracotta tiles", unit: "mq", quantity: 500 },
+            { id: 5, description: "Gutter replacement", unit: "m", quantity: 120 }
+        ]
     };
 
     // Mock Bids (for Admin)
@@ -36,7 +87,27 @@ const TenderDetails = () => {
         { id: 2, contractor: "Mario Repairs", amount: "€19,000", date: "2026-01-22" },
     ];
 
-    const [bidAmount, setBidAmount] = useState('');
+    const [boqPrices, setBoqPrices] = useState({});
+    const [totalBidAmount, setTotalBidAmount] = useState(0);
+    const [bidFile, setBidFile] = useState(null);
+
+    // Calculate total whenever prices change
+    React.useEffect(() => {
+        let total = 0;
+        tender.boqItems.forEach(item => {
+            const price = parseFloat(boqPrices[item.id]) || 0;
+            total += price * item.quantity;
+        });
+        setTotalBidAmount(total);
+    }, [boqPrices, tender.boqItems]);
+
+    const handlePriceChange = (itemId, value) => {
+        setBoqPrices(prev => ({
+            ...prev,
+            [itemId]: value
+        }));
+    };
+
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -60,11 +131,43 @@ const TenderDetails = () => {
         }, 300);
     };
 
-    const handleAward = (bidId) => {
-        alert(`Awarded to bid ${bidId}`); // Mock action
+    const [downloaded, setDownloaded] = useState(false);
+
+    // Awarding State
+    const [awardingBid, setAwardingBid] = useState(null); // The bid being awarded
+    const [clientRole, setClientRole] = useState('admin'); // 'admin' (Condominium) or 'technician'
+    const [awardFile, setAwardFile] = useState(null);
+    const [isAwarded, setIsAwarded] = useState(false);
+
+    // Payment / Regularization State
+    const [isRegularized, setIsRegularized] = useState(false);
+    const [processingPayment, setProcessingPayment] = useState(false);
+
+    const handleAwardClick = (bid) => {
+        setAwardingBid(bid);
     };
 
-    const [downloaded, setDownloaded] = useState(false);
+    const confirmAward = (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setTimeout(() => {
+            setSubmitting(false);
+            setIsAwarded(true);
+            setAwardingBid(null);
+            // In a real app, this would trigger a notification to the contractor
+            alert(`Tender officially awarded to ${awardingBid.contractor}!`);
+        }, 1500);
+    };
+
+    const handlePayment = () => {
+        setProcessingPayment(true);
+        // Simulate payment processing
+        setTimeout(() => {
+            setProcessingPayment(false);
+            setIsRegularized(true);
+            alert("Payment successful! The tender is now regularized.");
+        }, 2000);
+    };
 
     return (
         <div className="space-y-6">
@@ -84,8 +187,12 @@ const TenderDetails = () => {
                                         <CardTitle className="text-2xl">{tender.title}</CardTitle>
                                         <Badge variant={tender.priority === 'Urgent' ? 'destructive' : 'outline'}>{tender.priority}</Badge>
                                     </div>
-                                    <div className="flex gap-2 text-sm text-gray-500">
-                                        <span>{tender.location}</span>
+                                    <div className="flex gap-2 text-sm text-gray-500 flex-wrap">
+                                        <Badge variant="secondary" className="font-normal">{tender.category}</Badge>
+                                        <span className="flex items-center">
+                                            {tender.location}
+                                            {isUnlocked && <span className="ml-1 text-gray-700 font-medium">({tender.address})</span>}
+                                        </span>
                                         <span>•</span>
                                         <span className="flex items-center gap-1">
                                             Deadline: {tender.deadline}
@@ -98,12 +205,14 @@ const TenderDetails = () => {
                         </CardHeader>
                         <CardContent className="space-y-6">
 
-                            {/* Timeline */}
-                            <Timeline currentStep={tender.timelineStep} />
+                            {/* Timeline - Only if unlocked */}
+                            {isUnlocked && <Timeline currentStep={tender.timelineStep} />}
 
                             <div>
                                 <h4 className="font-semibold mb-2">Description</h4>
-                                <p className="text-gray-600">{tender.description}</p>
+                                <p className={`text-gray-600 ${!isUnlocked ? 'italic text-gray-500 blur-[2px] select-none' : ''}`}>
+                                    {isUnlocked ? tender.description : "This tender description includes full project scope, specific requirements, and site conditions. Unlock to view full details."}
+                                </p>
                             </div>
 
                             {tender.budget && (
@@ -113,62 +222,106 @@ const TenderDetails = () => {
                                 </div>
                             )}
 
-                            {/* Documents Management */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                    <Download className="h-4 w-4 text-blue-600" /> Documents
-                                </h4>
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm">
-                                        <p className="font-medium text-gray-700">Bill of Quantities (BOQ)</p>
-                                        <p className="text-xs text-gray-500">PDF, 2.5MB</p>
+                            {/* Documents Management or Locked State */}
+                            {isUnlocked ? (
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                        <Download className="h-4 w-4 text-blue-600" /> Documents
+                                    </h4>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm">
+                                            <p className="font-medium text-gray-700">Bill of Quantities (BOQ)</p>
+                                            <p className="text-xs text-gray-500">PDF, 2.5MB</p>
+                                        </div>
+                                        <Button
+                                            variant={downloaded ? "outline" : "default"}
+                                            size="sm"
+                                            onClick={() => setDownloaded(true)}
+                                        >
+                                            {downloaded ? 'Downloaded' : 'Download'}
+                                        </Button>
                                     </div>
-                                    <Button
-                                        variant={downloaded ? "outline" : "default"}
-                                        size="sm"
-                                        onClick={() => setDownloaded(true)}
-                                    >
-                                        {downloaded ? 'Downloaded' : 'Download'}
+                                    {downloaded && (
+                                        <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                            <CheckCircle className="h-3 w-3" /> Downloaded on {new Date().toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="bg-gray-50 p-8 rounded-lg border border-dashed border-gray-300 text-center space-y-4">
+                                    <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <Lock className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-gray-900">Restricted Access</h4>
+                                        <p className="text-sm text-gray-500 max-w-sm mx-auto mt-1">
+                                            This tender requires <strong>{getCreditCost(tender.budget)} credits</strong> based on the budget range.
+                                        </p>
+                                        <p className="text-xs text-blue-600 mt-2">
+                                            Your Balance: {user?.credits || 0} Credits
+                                        </p>
+                                    </div>
+                                    <Button onClick={handleUnlock} className="bg-amber-600 hover:bg-amber-700 text-white shadow-md">
+                                        Unlock for {getCreditCost(tender.budget)} Credits
                                     </Button>
                                 </div>
-                                {downloaded && (
-                                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                                        <CheckCircle className="h-3 w-3" /> Downloaded on {new Date().toLocaleDateString()}
-                                    </p>
-                                )}
-                            </div>
+                            )}
                         </CardContent>
                     </Card>
 
                     {/* Admin View: Bids List */}
+                    {/* Admin View: Sealed Bids & Evaluation */}
                     {user?.role === 'admin' && (
                         <Card>
-                            <CardHeader>
+                            <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Received Bids ({bids.length})</CardTitle>
+                                {new Date(tender.deadline) < new Date() && (
+                                    <Button variant="outline" size="sm" className="gap-2">
+                                        <Download className="h-4 w-4" /> Export Comparison (CSV)
+                                    </Button>
+                                )}
                             </CardHeader>
                             <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Contractor</TableHead>
-                                            <TableHead>Amount</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Action</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {bids.map((bid) => (
-                                            <TableRow key={bid.id}>
-                                                <TableCell className="font-medium">{bid.contractor}</TableCell>
-                                                <TableCell>{bid.amount}</TableCell>
-                                                <TableCell>{bid.date}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button size="sm" onClick={() => handleAward(bid.id)}>Award</Button>
-                                                </TableCell>
+                                {new Date(tender.deadline) > new Date() ? (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                                        <Lock className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                                        <h3 className="font-semibold text-amber-800">Bids are Sealed</h3>
+                                        <p className="text-amber-700 text-sm mt-1">
+                                            Offers will become visible automatically after the deadline ({tender.deadline}).
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Contractor</TableHead>
+                                                <TableHead>Amount</TableHead>
+                                                <TableHead className="w-24">Tech Score</TableHead>
+                                                <TableHead className="w-24">Fin Score</TableHead>
+                                                <TableHead className="text-right">Action</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {bids.map((bid) => (
+                                                <TableRow key={bid.id}>
+                                                    <TableCell className="font-medium">{bid.contractor}</TableCell>
+                                                    <TableCell>{bid.amount}</TableCell>
+                                                    <TableCell>
+                                                        <Input type="number" className="h-8 w-16" placeholder="0-10" />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input type="number" className="h-8 w-16" placeholder="0-10" />
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button size="sm" onClick={() => handleAwardClick(bid)} disabled={isAwarded}>
+                                                            {isAwarded ? 'Awarded' : 'Award'}
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                )}
                             </CardContent>
                         </Card>
                     )}
@@ -177,30 +330,67 @@ const TenderDetails = () => {
                 {/* Right Column: Key Actions */}
                 <div className="w-full md:w-80 space-y-6">
                     {/* Contractor View: Submit Bid */}
-                    {user?.role === 'contractor' && !submitted && (
+                    {user?.role === 'contractor' && !submitted && isUnlocked && (
                         <Card className="border-blue-100 shadow-md sticky top-6">
                             <CardHeader className="bg-blue-50/50">
-                                <CardTitle className="text-lg text-blue-700">Submit Your Bid</CardTitle>
+                                <CardTitle className="text-lg text-blue-700">Submit Offer (BoQ)</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6">
-                                <form onSubmit={handleBidSubmit} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Bid Amount (€)</label>
-                                        <Input
-                                            type="number"
-                                            placeholder="0.00"
-                                            value={bidAmount}
-                                            onChange={(e) => setBidAmount(e.target.value)}
-                                            required
-                                        />
+                                <form onSubmit={handleBidSubmit} className="space-y-6">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-sm">Bill of Quantities</h4>
+                                        <div className="bg-white rounded-md border border-gray-200 overflow-hidden text-xs">
+                                            <table className="w-full">
+                                                <thead className="bg-gray-50 text-left">
+                                                    <tr>
+                                                        <th className="p-2 font-medium text-gray-500">Item</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-16">Unit</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-16">Qty</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-24">Price (€)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {tender.boqItems.map((item) => (
+                                                        <tr key={item.id}>
+                                                            <td className="p-2 truncate max-w-[120px]" title={item.description}>{item.description}</td>
+                                                            <td className="p-2 text-gray-500">{item.unit}</td>
+                                                            <td className="p-2 font-medium">{item.quantity}</td>
+                                                            <td className="p-2">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    step="0.01"
+                                                                    className="w-full text-right border rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 outline-none"
+                                                                    placeholder="0.00"
+                                                                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                                                                    required
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                                <tfoot className="bg-gray-50 font-bold">
+                                                    <tr>
+                                                        <td colSpan="3" className="p-2 text-right">Total Project:</td>
+                                                        <td className="p-2 text-right text-blue-700">€{totalBidAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Upload Offer (PDF)</label>
-                                        <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer">
+                                        <label className="text-sm font-medium">Upload Signed Quote (PDF) *</label>
+                                        <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer relative">
                                             <Upload className="h-5 w-5 mx-auto mb-1" />
-                                            <span>Select PDF (Max 5MB)</span>
-                                            <input type="file" className="hidden" accept=".pdf" required />
+                                            <span>{bidFile ? bidFile.name : "Select Signed PDF"}</span>
+                                            <input
+                                                type="file"
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                accept=".pdf"
+                                                onChange={(e) => setBidFile(e.target.files[0])}
+                                                required
+                                            />
                                         </div>
                                     </div>
 
@@ -210,15 +400,24 @@ const TenderDetails = () => {
                                         </div>
                                     )}
 
-                                    <Button className="w-full" type="submit" disabled={submitting}>
-                                        {submitting ? 'Uploading...' : 'Submit Bid'}
+                                    <div className="flex items-start space-x-2 border p-3 rounded-md bg-blue-50 border-blue-100 mb-4">
+                                        <input type="checkbox" id="fee-agree" className="mt-1" required />
+                                        <label htmlFor="fee-agree" className="text-sm text-blue-800">
+                                            I agree that in case of award, a success fee of <strong>3%</strong> of the contract value
+                                            ({(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })})
+                                            will be due to the platform.
+                                        </label>
+                                    </div>
+
+                                    <Button className="w-full" type="submit" disabled={submitting || totalBidAmount === 0 || !bidFile}>
+                                        {submitting ? 'Submitting Offer...' : `Submit Offer (€${totalBidAmount.toLocaleString()})`}
                                     </Button>
                                 </form>
                             </CardContent>
                         </Card>
                     )}
 
-                    {user?.role === 'contractor' && submitted && (
+                    {user?.role === 'contractor' && submitted && !isAwarded && (
                         <Card className="bg-green-50 border-green-200 sticky top-6">
                             <CardContent className="pt-6 text-center space-y-2">
                                 <CheckCircle className="h-10 w-10 text-green-600 mx-auto" />
@@ -231,8 +430,120 @@ const TenderDetails = () => {
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Contractor View: Payment Request (Success Fee) */}
+                    {user?.role === 'contractor' && isAwarded && (
+                        <Card className="bg-blue-50 border-blue-200 sticky top-6">
+                            <CardHeader>
+                                <CardTitle className="text-blue-800 flex items-center gap-2">
+                                    <Info className="h-5 w-5" /> Action Required: Success Fee
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-blue-700">
+                                    Congratulations! You have been awarded this tender.
+                                    To finalize the procedure and receive the contact details of the client, please proceed with the payment of the success fee.
+                                </p>
+
+                                <div className="bg-white p-4 rounded border border-blue-100">
+                                    <div className="flex justify-between text-sm mb-2">
+                                        <span className="text-gray-600">Contract Value:</span>
+                                        <span className="font-medium">€{totalBidAmount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm mb-2">
+                                        <span className="text-gray-600">Success Fee (3%):</span>
+                                        <span className="font-bold text-blue-600">
+                                            {(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                                    Pay Success Fee
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Admin View: Status Message */}
+                    {user?.role === 'admin' && isAwarded && (
+                        <Card className="bg-amber-50 border-amber-200 border-l-4 border-l-amber-500">
+                            <CardContent className="p-4 flex items-start gap-3">
+                                <Info className="h-5 w-5 text-amber-600 mt-0.5" />
+                                <div>
+                                    <h4 className="font-semibold text-amber-800">Pending Regularization</h4>
+                                    <p className="text-sm text-amber-700">
+                                        The tender has been awarded. Waiting for the contractor to pay the success fee.
+                                        Once paid, you will receive a notification.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
+
+            {/* Award Confirmation Modal */}
+            {awardingBid && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <Card className="w-full max-w-md bg-white shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                        <CardHeader>
+                            <CardTitle>Award Tender</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={confirmAward} className="space-y-4">
+                                <p className="text-sm text-gray-600">
+                                    You are awarding this tender to <strong>{awardingBid.contractor}</strong> for <strong>{awardingBid.amount}</strong>.
+                                </p>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">I am acting as:</label>
+                                    <select
+                                        className="w-full border rounded p-2 text-sm bg-white"
+                                        value={clientRole}
+                                        onChange={(e) => setClientRole(e.target.value)}
+                                    >
+                                        <option value="admin">Condominium Administrator</option>
+                                        <option value="technician">Delegated Technician</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">
+                                        Upload Required Document: <br />
+                                        <span className="text-blue-600 font-normal">
+                                            {clientRole === 'admin' ? "Assembly Minutes (PDF)" : "Signed Quotation Acceptance (PDF)"}
+                                        </span>
+                                    </label>
+                                    <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer relative">
+                                        <Upload className="h-5 w-5 mx-auto mb-1" />
+                                        <span>{awardFile ? awardFile.name : "Select File (PDF)"}</span>
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            accept=".pdf"
+                                            onChange={(e) => setAwardFile(e.target.files[0])}
+                                            required
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">
+                                        {clientRole === 'admin'
+                                            ? "Required: Minutes of the assembly assigning the contract."
+                                            : "Required: Quotation signed by the client for acceptance."}
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <Button variant="ghost" type="button" onClick={() => setAwardingBid(null)}>Cancel</Button>
+                                    <Button type="submit" disabled={submitting || !awardFile}>
+                                        {submitting ? 'Processing...' : 'Confirm Award'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };

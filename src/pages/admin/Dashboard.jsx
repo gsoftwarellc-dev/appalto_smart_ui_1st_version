@@ -29,7 +29,7 @@ const Dashboard = () => {
     const recentActivity = [
         { id: 1, type: "bid", message: "New bid received from Giovanni Rossi for Roof Renovation", time: "2 hours ago", color: "text-blue-600" },
         { id: 2, type: "tender", message: "Facade Painting tender published successfully", time: "5 hours ago", color: "text-green-600" },
-        { id: 3, type: "message", message: "New message from Maria Bianchi", time: "1 day ago", color: "text-purple-600" },
+
         { id: 4, type: "award", message: "Garden Maintenance awarded to Luca Verdi", time: "2 days ago", color: "text-orange-600" },
     ];
 
@@ -56,8 +56,8 @@ const Dashboard = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
-                    <p className="text-gray-500">Overview of the entire tender management system</p>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard', 'Client Dashboard')}</h2>
+                    <p className="text-gray-500">Manage your tender requests and compare offers</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* Date Range Filter */}
@@ -212,11 +212,7 @@ const Dashboard = () => {
                                 <Users className="h-4 w-4 mr-2" /> View Contractors
                             </Button>
                         </Link>
-                        <Link to="/admin/messages">
-                            <Button variant="outline" className="w-full justify-start">
-                                <Bell className="h-4 w-4 mr-2" /> Check Messages
-                            </Button>
-                        </Link>
+
                         <Link to="/admin/documents">
                             <Button variant="outline" className="w-full justify-start">
                                 <FileText className="h-4 w-4 mr-2" /> View Documents

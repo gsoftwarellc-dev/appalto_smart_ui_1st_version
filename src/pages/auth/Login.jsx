@@ -21,7 +21,7 @@ const Login = () => {
         setLoading(true);
 
         // Mock login based on selection
-        const email = role === 'admin' ? 'admin@example.com' : 'contractor@example.com';
+        const email = role === 'admin' ? 'admin@example.com' : role === 'owner' ? 'owner@example.com' : 'contractor@example.com';
         const password = 'password';
 
         try {
@@ -29,6 +29,8 @@ const Login = () => {
             if (result.success) {
                 if (role === 'admin') {
                     navigate('/admin');
+                } else if (role === 'owner') {
+                    navigate('/owner');
                 } else {
                     navigate('/contractor');
                 }
@@ -54,16 +56,18 @@ const Login = () => {
                     <form onSubmit={handleLogin} className="space-y-6">
 
                         {/* Role Selection Dropdown Replacement */}
+                        {/* Role Selection Dropdown Replacement */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none">Select Dashboard</label>
+                            <label className="text-sm font-medium leading-none">{t('auth.select_dashboard')}</label>
                             <div className="relative">
                                 <select
                                     value={role}
                                     onChange={(e) => setRole(e.target.value)}
                                     className="flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                 >
-                                    <option value="contractor">Contractor Dashboard</option>
-                                    <option value="admin">Administrator Dashboard</option>
+                                    <option value="contractor">{t('auth.contractor')}</option>
+                                    <option value="admin">{t('auth.client')}</option>
+                                    <option value="owner">{t('auth.owner')}</option>
                                 </select>
                                 <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-500 pointer-events-none" />
                             </div>
@@ -75,7 +79,7 @@ const Login = () => {
                                 <label className="text-sm font-medium leading-none">{t('auth.email')}</label>
                                 <Input
                                     type="email"
-                                    value={role === 'admin' ? 'admin@appalto.smart' : 'contractor@appalto.smart'}
+                                    value={role === 'admin' ? 'admin@appalto.smart' : role === 'owner' ? 'owner@appalto.smart' : 'contractor@appalto.smart'}
                                     disabled
                                     className="bg-gray-50 cursor-not-allowed"
                                 />
@@ -92,14 +96,12 @@ const Login = () => {
                         </div>
 
                         <Button className="w-full" type="submit" disabled={loading}>
-                            {loading ? 'Entering...' : `Enter ${role === 'admin' ? 'Admin' : 'Contractor'} Dashboard`}
+                            {loading ? t('auth.entering') : t('auth.enter_dashboard')}
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="justify-center border-t pt-4">
-                    <div className="text-xs text-gray-400 text-center">
-                        Authentication is currently simplified for MVP demo.
-                    </div>
+                    {/* Registration disabled for MVP */}
                 </CardFooter>
             </Card>
         </div>

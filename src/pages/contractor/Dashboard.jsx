@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { FileText, Award, Clock, Bell, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Award, Clock, Bell, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -75,39 +75,99 @@ const Dashboard = () => {
                 ))}
             </div>
 
-            {/* Full Width / Large Pie Analysis */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Bids Analysis</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={80} // Thinner donut
-                                outerRadius={120}
-                                paddingAngle={5}
-                                dataKey="value"
-                                cornerRadius={8} // Modern rounded corners
-                                label={renderCustomizedLabel} // Custom label with Name: Value
-                                labelLine={true} // Show connector lines
-                            >
-                                {pieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                itemStyle={{ fontSize: '14px', fontWeight: '500' }}
-                            />
-                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
+            {/* Deadline Calendar & Bids Analysis Grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Deadline Calendar */}
+                <Card className="h-full">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle>Deadline Calendar</CardTitle>
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 rounded-lg p-4 text-center">
+                                <h3 className="font-semibold text-gray-900">February 2026</h3>
+                            </div>
+                            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
+                                <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+                            </div>
+                            <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                                {/* Padding for Feb 2026 starting on Sun (approx) - adjusting for demo visual */}
+                                <div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div>
+                                <div className="p-2">1</div>
+                                {[...Array(28)].map((_, i) => {
+                                    const day = i + 2;
+                                    const isDeadline = [15, 20].includes(day);
+                                    const isToday = day === 5;
+                                    return (
+                                        <div key={day} className={`p-2 rounded-full relative ${isToday ? 'bg-blue-100 font-bold text-blue-600' : ''} ${isDeadline ? 'cursor-pointer hover:bg-red-50' : ''}`}>
+                                            {day}
+                                            {isDeadline && <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-500 rounded-full"></span>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="pt-4 space-y-2">
+                                <h4 className="text-sm font-medium text-gray-700">Upcoming Deadlines</h4>
+                                <div className="flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="bg-red-100 text-red-600 p-2 rounded-lg">
+                                        <span className="text-xs font-bold block">FEB</span>
+                                        <span className="text-lg font-bold block leading-none">15</span>
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-sm">Roof Renovation</p>
+                                        <p className="text-xs text-gray-500">Via Roma 5</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="bg-red-100 text-red-600 p-2 rounded-lg">
+                                        <span className="text-xs font-bold block">FEB</span>
+                                        <span className="text-lg font-bold block leading-none">20</span>
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-sm">Facade Painting</p>
+                                        <p className="text-xs text-gray-500">Florence</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Pie Chart */}
+                <Card className="h-full">
+                    <CardHeader>
+                        <CardTitle>Bids Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[350px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={pieData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={80} // Thinner donut
+                                    outerRadius={120}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    cornerRadius={8} // Modern rounded corners
+                                    label={renderCustomizedLabel} // Custom label with Name: Value
+                                    labelLine={true} // Show connector lines
+                                >
+                                    {pieData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    itemStyle={{ fontSize: '14px', fontWeight: '500' }}
+                                />
+                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
 
             {/* Recent Activity */}
             <Card>

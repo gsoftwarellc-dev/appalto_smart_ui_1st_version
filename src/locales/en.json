@@ -3,7 +3,7 @@
         "welcome": "Welcome to Appalto Smart",
         "logout": "Logout",
         "language": "Language",
-        "dashboard": "Dashboard"
+        "dashboard": "Client Dashboard"
     },
     "auth": {
         "login": "Login",

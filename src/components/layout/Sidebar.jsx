@@ -15,7 +15,8 @@ import {
     FolderOpen,
     MessageSquare,
     Users,
-    FileCheck
+    FileCheck,
+    CreditCard
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -29,7 +30,6 @@ const Sidebar = () => {
         { to: '/admin/tenders', icon: List, label: t('admin.tendersList') },
         { to: '/admin/bids', icon: FileCheck, label: 'Bid Management' },
         { to: '/admin/contractors', icon: Users, label: 'Contractors' },
-        { to: '/admin/messages', icon: MessageSquare, label: 'Messages' },
         { to: '/admin/documents', icon: FolderOpen, label: 'Documents' },
         { to: '/admin/notifications', icon: Bell, label: 'Notifications' },
         { to: '/admin/profile', icon: UserCircle, label: 'My Profile' },
@@ -40,8 +40,8 @@ const Sidebar = () => {
         { to: '/contractor/tenders', icon: Briefcase, label: t('contractor.activeTenders') },
         { to: '/contractor/bids', icon: FileText, label: t('contractor.myBids') },
         { to: '/contractor/documents', icon: FolderOpen, label: 'Document Center' },
-        { to: '/contractor/messages', icon: MessageSquare, label: 'Messages' },
         { to: '/contractor/notifications', icon: Bell, label: 'Notifications' },
+        { to: '/contractor/billing', icon: CreditCard, label: 'Billing' },
         { to: '/contractor/profile', icon: UserCircle, label: 'My Profile' },
     ];
 

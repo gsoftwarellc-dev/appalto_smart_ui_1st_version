@@ -3,7 +3,7 @@
         "welcome": "Benvenuto su Appalto Smart",
         "logout": "Esci",
         "language": "Lingua",
-        "dashboard": "Dashboard"
+        "dashboard": "Dashboard Committente"
     },
     "auth": {
         "login": "Accedi",

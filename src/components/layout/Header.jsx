@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
-import { Globe, LogOut, User, Bell } from 'lucide-react';
+import { Globe, LogOut, User, Bell, Menu } from 'lucide-react';
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
     const { user, logout } = useAuth();
     const { t, i18n } = useTranslation();
     const [notifications] = useState(3); // Mock notification count
@@ -17,7 +17,9 @@ const Header = () => {
     return (
         <header className="bg-white shadow px-6 py-4 flex justify-between items-center z-20 relative">
             <div className="flex items-center">
-                {/* Mobile menu button could go here */}
+                <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={onMenuClick}>
+                    <Menu className="h-6 w-6" />
+                </Button>
                 {/* Title removed as per user request */}
             </div>
 

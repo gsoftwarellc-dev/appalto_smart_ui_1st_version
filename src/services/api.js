@@ -42,9 +42,20 @@ export const mockLogin = async (email, password) => {
                         id: 2,
                         name: 'Contractor User',
                         email: email,
-                        role: 'contractor'
+                        role: 'contractor',
+                        credits: 50
                     },
                     token: 'mock-contractor-token'
+                });
+            } else if (email.includes('owner')) {
+                resolve({
+                    user: {
+                        id: 3,
+                        name: 'Platform Owner',
+                        email: email,
+                        role: 'owner'
+                    },
+                    token: 'mock-owner-token'
                 });
             } else {
                 reject(new Error('Invalid credentials. Use "admin" or "contractor" in email.'));

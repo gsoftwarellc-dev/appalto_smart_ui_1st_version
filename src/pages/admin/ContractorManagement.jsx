@@ -4,7 +4,7 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Search, User, MapPin, Briefcase, Mail, Phone, MessageSquare } from 'lucide-react';
+import { Search, User, MapPin, Briefcase, Mail, Phone } from 'lucide-react';
 
 const ContractorManagement = () => {
     const navigate = useNavigate();
@@ -70,10 +70,7 @@ const ContractorManagement = () => {
         return matchesSearch && matchesLocation;
     });
 
-    const handleMessageContractor = (contractor) => {
-        // Navigate to messages page - in a real app, this would pre-select the contractor's thread
-        navigate('/admin/messages', { state: { contractorId: contractor.id, contractorName: contractor.name } });
-    };
+
 
     return (
         <div className="space-y-6">
@@ -185,14 +182,7 @@ const ContractorManagement = () => {
                                 <Button variant="outline" size="sm">
                                     <User className="h-3 w-3 mr-1" /> View Profile
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                                    onClick={() => handleMessageContractor(contractor)}
-                                >
-                                    <MessageSquare className="h-3 w-3 mr-1" /> Message
-                                </Button>
+
                             </div>
                         </CardContent>
                     </Card>

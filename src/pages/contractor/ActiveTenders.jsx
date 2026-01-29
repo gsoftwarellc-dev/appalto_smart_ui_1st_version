@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Search, MapPin, Calendar, Clock, Filter, X } from 'lucide-react';
+import { Search, MapPin, Calendar, Clock, Filter, X, Lock } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import CountdownTimer from '../../components/ui/CountdownTimer';
 
@@ -16,11 +16,11 @@ const ActiveTenders = () => {
 
     // Mock Data
     const allTenders = [
-        { id: 1, title: "Roof Renovation - Via Roma 5", description: "Complete roof replacement for 5-story building.", location: "Rome", category: "Construction", budget: 20000, deadline: "2026-02-15", status: "Open" },
-        { id: 4, title: "Electrical Upgrade - Via Napoli 8", description: "Rewiring of common areas and install LED.", location: "Naples", category: "Electrical", budget: 5000, deadline: "2026-03-01", status: "Open" },
-        { id: 6, title: "Plumbing Fix - Torino", description: "Emergency pipe repair in basement.", location: "Turin", category: "Plumbing", budget: 3000, deadline: "2026-01-30", status: "Urgent" },
-        { id: 7, title: "Facade Painting - Florence", description: "Painting of historical building facade.", location: "Florence", category: "Painting", budget: 12000, deadline: "2026-02-20", status: "Open" },
-        { id: 8, title: "HVAC Maintenance - Rome", description: "Annual maintenance for office complex.", location: "Rome", category: "HVAC", budget: 8000, deadline: "2026-02-10", status: "Urgent" },
+        { id: 1, title: "Roof Renovation - Via Roma 5", description: "Complete roof replacement for 5-story building.", location: "Rome", category: "Construction", budget: 20000, deadline: "2026-02-15", status: "Open", isUnlocked: true },
+        { id: 4, title: "Electrical Upgrade (Partial Info)", description: "Electrical upgrade work in Naples area. Purchase credits to view full details.", location: "Naples", category: "Electrical", budget: 5000, deadline: "2026-03-01", status: "Open", isUnlocked: false },
+        { id: 6, title: "Plumbing Fix (Partial Info)", description: "Urgent plumbing repair needed. Purchase credits to participate.", location: "Turin", category: "Plumbing", budget: 3000, deadline: "2026-01-30", status: "Urgent", isUnlocked: false },
+        { id: 7, title: "Facade Painting - Florence", description: "Painting of historical building facade.", location: "Florence", category: "Painting", budget: 12000, deadline: "2026-02-20", status: "Open", isUnlocked: true },
+        { id: 8, title: "HVAC Maintenance (Partial Info)", description: "Scheduled maintenance for commercial property.", location: "Rome", category: "HVAC", budget: 8000, deadline: "2026-02-10", status: "Urgent", isUnlocked: false },
     ];
 
     // Get unique locations for filter
@@ -97,8 +97,8 @@ const ActiveTenders = () => {
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={`flex-1 px-4 py-1.5 text-sm font-medium rounded transition-colors ${statusFilter === status
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'text-gray-600 hover:bg-gray-50'
                                         }`}
                                 >
                                     {status}
@@ -117,31 +117,34 @@ const ActiveTenders = () => {
                                 <div className="space-y-2 flex-1">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{tender.title}</h3>
+                                        {!tender.isUnlocked && <Badge variant="outline" className="text-gray-500 border-gray-300"><Lock className="w-3 h-3 mr-1" /> Locked</Badge>}
                                         {tender.status === 'Urgent' && <Badge variant="destructive" className="animate-pulse">Urgent</Badge>}
                                         {tender.status === 'Open' && <Badge variant="secondary">Open</Badge>}
                                     </div>
-                                    <p className="text-gray-600 line-clamp-2 max-w-2xl">{tender.description}</p>
+                                    <p className={`text-gray-600 line-clamp-2 max-w-2xl ${!tender.isUnlocked ? 'italic text-gray-500' : ''}`}>
+                                        {tender.description}
+                                    </p>
 
                                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 pt-3">
-                                        <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
+                                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${!tender.isUnlocked ? 'bg-gray-100 blur-sm select-none' : 'bg-gray-100'}`}>
                                             <MapPin className="h-3.5 w-3.5" />
-                                            {tender.location}
+                                            {tender.isUnlocked ? tender.location : 'Hidden Location'}
                                         </span>
                                         <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
                                             <Calendar className="h-3.5 w-3.5" />
                                             Deadline: {tender.deadline}
                                         </span>
-                                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${tender.status === 'Urgent' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-blue-50 border-blue-100 text-blue-700'
-                                            }`}>
-                                            <Clock className="h-3.5 w-3.5" />
-                                            <CountdownTimer deadline={tender.deadline} />
+                                        <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
+                                            <span className="font-semibold">Budget:</span> €{tender.budget}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-col justify-center min-w-[140px]">
-                                    <Button asChild size="lg" className="w-full">
-                                        <Link to={`/contractor/tenders/${tender.id}`}>View Details</Link>
+                                    <Button asChild={tender.isUnlocked} size="lg" className={`w-full ${!tender.isUnlocked ? 'bg-amber-600 hover:bg-amber-700' : ''}`}>
+                                        <Link to={`/contractor/tenders/${tender.id}`}>
+                                            {tender.isUnlocked ? 'View Details' : 'Unlock Details'}
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
