@@ -91,21 +91,57 @@ const TenderDetails = () => {
     const [totalBidAmount, setTotalBidAmount] = useState(0);
     const [bidFile, setBidFile] = useState(null);
 
-    // Calculate total whenever prices change
-    React.useEffect(() => {
-        let total = 0;
-        tender.boqItems.forEach(item => {
-            const price = parseFloat(boqPrices[item.id]) || 0;
-            total += price * item.quantity;
-        });
-        setTotalBidAmount(total);
-    }, [boqPrices, tender.boqItems]);
+    const [editableItems, setEditableItems] = useState([]);
 
-    const handlePriceChange = (itemId, value) => {
-        setBoqPrices(prev => ({
-            ...prev,
-            [itemId]: value
-        }));
+    // Initialize editable items from tender data
+    React.useEffect(() => {
+        if (tender.boqItems) {
+            // Map items to include their price state if existing, or 0
+            setEditableItems(tender.boqItems.map(item => ({
+                ...item,
+                price: boqPrices[item.id] || 0
+            })));
+        }
+    }, [tender, boqPrices]); // Re-sync if tender/prices change strictly - in real app handle carefully
+
+    const [discountType, setDiscountType] = useState('percent'); // 'percent' or 'fixed'
+    const [discountValue, setDiscountValue] = useState('');
+
+    // Calculate totals based on EDITABLE items
+    React.useEffect(() => {
+        let subtotal = 0;
+        editableItems.forEach(item => {
+            const price = parseFloat(item.price) || 0;
+            const qty = parseFloat(item.quantity) || 0;
+            subtotal += price * qty;
+        });
+
+        let discountAmount = 0;
+        if (discountValue) {
+            const val = parseFloat(discountValue) || 0;
+            if (discountType === 'percent') {
+                discountAmount = subtotal * (val / 100);
+            } else {
+                discountAmount = val;
+            }
+        }
+
+        setTotalBidAmount(subtotal - discountAmount);
+    }, [editableItems, discountType, discountValue]);
+
+    const handleItemChange = (index, field, value) => {
+        const newItems = [...editableItems];
+        newItems[index][field] = value;
+        setEditableItems(newItems);
+        // Also update standard price tracking map if needed for compatibility
+        if (field === 'price') {
+            setBoqPrices(prev => ({ ...prev, [newItems[index].id]: value }));
+        }
+    };
+
+    const addItem = () => {
+        const newId = Math.max(...editableItems.map(i => i.id), 0) + 1;
+        setEditableItems([...editableItems, { id: newId, description: '', unit: '', quantity: 0, price: 0 }]);
     };
 
     const [submitting, setSubmitting] = useState(false);
@@ -217,7 +253,7 @@ const TenderDetails = () => {
 
                             {tender.budget && (
                                 <div>
-                                    <h4 className="font-semibold mb-2">Estimated Budget</h4>
+                                    <h4 className="font-semibold mb-2">Importo stimato</h4>
                                     <p className="text-gray-600 font-mono">{tender.budget}</p>
                                 </div>
                             )}
@@ -333,46 +369,116 @@ const TenderDetails = () => {
                     {user?.role === 'contractor' && !submitted && isUnlocked && (
                         <Card className="border-blue-100 shadow-md sticky top-6">
                             <CardHeader className="bg-blue-50/50">
-                                <CardTitle className="text-lg text-blue-700">Submit Offer (BoQ)</CardTitle>
+                                <CardTitle className="text-lg text-blue-700">Invia offerta (Computo Metrico)</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6">
                                 <form onSubmit={handleBidSubmit} className="space-y-6">
                                     <div className="space-y-4">
-                                        <h4 className="font-semibold text-sm">Bill of Quantities</h4>
+                                        <h4 className="font-semibold text-sm">Computo metrico estimativo</h4>
                                         <div className="bg-white rounded-md border border-gray-200 overflow-hidden text-xs">
                                             <table className="w-full">
                                                 <thead className="bg-gray-50 text-left">
                                                     <tr>
-                                                        <th className="p-2 font-medium text-gray-500">Item</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-16">Unit</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-16">Qty</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-24">Price (€)</th>
+                                                        <th className="p-2 font-medium text-gray-500">Voce computo</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-14">Unità</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-16">Quantità</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-20">Prezzo (€)</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-24 text-right">Totale (€)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100">
-                                                    {tender.boqItems.map((item) => (
+                                                    {editableItems.map((item, index) => (
                                                         <tr key={item.id}>
-                                                            <td className="p-2 truncate max-w-[120px]" title={item.description}>{item.description}</td>
-                                                            <td className="p-2 text-gray-500">{item.unit}</td>
-                                                            <td className="p-2 font-medium">{item.quantity}</td>
+                                                            <td className="p-2">
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-300 outline-none text-sm"
+                                                                    value={item.description}
+                                                                    onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2">
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-300 outline-none text-gray-500 text-sm"
+                                                                    value={item.unit}
+                                                                    onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2">
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-300 outline-none font-medium text-sm"
+                                                                    value={item.quantity}
+                                                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                                />
+                                                            </td>
                                                             <td className="p-2">
                                                                 <input
                                                                     type="number"
                                                                     min="0"
                                                                     step="0.01"
-                                                                    className="w-full text-right border rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 outline-none"
-                                                                    placeholder="0.00"
-                                                                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                                                                    className="w-full text-right border rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                                                                    placeholder="0,00"
+                                                                    value={item.price || ''}
+                                                                    onChange={(e) => handleItemChange(index, 'price', e.target.value)}
                                                                     required
                                                                 />
                                                             </td>
+                                                            <td className="p-2 text-right text-sm text-gray-700">
+                                                                €{((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0)).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
                                                         </tr>
                                                     ))}
-                                                </tbody>
-                                                <tfoot className="bg-gray-50 font-bold">
                                                     <tr>
-                                                        <td colSpan="3" className="p-2 text-right">Total Project:</td>
-                                                        <td className="p-2 text-right text-blue-700">€{totalBidAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                        <td colSpan="5" className="p-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={addItem}
+                                                                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-8 px-2"
+                                                            >
+                                                                + Aggiungi Voce
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot className="bg-gray-50 font-bold border-t border-gray-200">
+                                                    <tr>
+                                                        <td colSpan="3" className="p-2 text-right pt-4">Sconto / Ribasso:</td>
+                                                        <td colSpan="2" className="p-2 text-right pt-4">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-20 text-right border rounded px-1 py-0.5 text-sm font-normal"
+                                                                    placeholder={discountType === 'percent' ? "0%" : "€0"}
+                                                                    value={discountValue}
+                                                                    onChange={(e) => setDiscountValue(e.target.value)}
+                                                                />
+                                                                <div className="flex rounded border bg-white overflow-hidden h-7">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setDiscountType('percent')}
+                                                                        className={`px-2 text-xs ${discountType === 'percent' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                                                                    >
+                                                                        %
+                                                                    </button>
+                                                                    <div className="w-px bg-gray-200"></div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setDiscountType('fixed')}
+                                                                        className={`px-2 text-xs ${discountType === 'fixed' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                                                                    >
+                                                                        €
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colSpan="3" className="p-2 text-right text-lg">Progetto totale:</td>
+                                                        <td colSpan="2" className="p-2 text-right text-blue-700 text-lg">€{totalBidAmount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -380,10 +486,10 @@ const TenderDetails = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Upload Signed Quote (PDF) *</label>
+                                        <label className="text-sm font-medium">Carica preventivo firmato (PDF) *</label>
                                         <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer relative">
                                             <Upload className="h-5 w-5 mx-auto mb-1" />
-                                            <span>{bidFile ? bidFile.name : "Select Signed PDF"}</span>
+                                            <span>{bidFile ? bidFile.name : "Seleziona PDF firmato"}</span>
                                             <input
                                                 type="file"
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
@@ -403,14 +509,13 @@ const TenderDetails = () => {
                                     <div className="flex items-start space-x-2 border p-3 rounded-md bg-blue-50 border-blue-100 mb-4">
                                         <input type="checkbox" id="fee-agree" className="mt-1" required />
                                         <label htmlFor="fee-agree" className="text-sm text-blue-800">
-                                            I agree that in case of award, a success fee of <strong>3%</strong> of the contract value
-                                            ({(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })})
-                                            will be due to the platform.
+                                            Accetto che in caso di aggiudicazione, una commissione di successo del <strong>3%</strong> sul valore del contratto
+                                            ({(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}) sarà dovuta alla piattaforma.
                                         </label>
                                     </div>
 
                                     <Button className="w-full" type="submit" disabled={submitting || totalBidAmount === 0 || !bidFile}>
-                                        {submitting ? 'Submitting Offer...' : `Submit Offer (€${totalBidAmount.toLocaleString()})`}
+                                        {submitting ? 'Invio in corso...' : `Invia offerta (€${totalBidAmount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                                     </Button>
                                 </form>
                             </CardContent>

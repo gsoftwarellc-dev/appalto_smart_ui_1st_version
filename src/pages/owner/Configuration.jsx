@@ -15,7 +15,7 @@ const Configuration = () => {
         successFeePercent: 3.0,
         tenderDurationDays: 15,
         minBudgetValues: [0, 50000, 100000, 250000],
-        aiEnabled: true,
+
         autoApproveClients: false,
     });
 
@@ -107,19 +107,7 @@ const Configuration = () => {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
-                            <div className="space-y-0.5">
-                                <Label className="text-base">AI Analysis Module</Label>
-                                <p className="text-xs text-gray-500">Enable AI risk detection for tenders</p>
-                            </div>
-                            <button onClick={() => handleChange('aiEnabled', !config.aiEnabled)}>
-                                {config.aiEnabled ? (
-                                    <ToggleRight className="h-8 w-8 text-green-600" />
-                                ) : (
-                                    <ToggleLeft className="h-8 w-8 text-gray-400" />
-                                )}
-                            </button>
-                        </div>
+
 
                         <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
                             <div className="space-y-0.5">

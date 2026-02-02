@@ -36,6 +36,27 @@ const CreateTender = () => {
         });
     };
 
+    // BoQ Manual Entry Logic
+    const [boqMode, setBoqMode] = useState('file'); // 'file' or 'manual'
+    const [boqItems, setBoqItems] = useState([
+        { description: '', unit: '', quantity: '' }
+    ]);
+
+    const addBoqItem = () => {
+        setBoqItems([...boqItems, { description: '', unit: '', quantity: '' }]);
+    };
+
+    const removeBoqItem = (index) => {
+        const newItems = boqItems.filter((_, i) => i !== index);
+        setBoqItems(newItems);
+    };
+
+    const handleBoqChange = (index, field, value) => {
+        const newItems = [...boqItems];
+        newItems[index][field] = value;
+        setBoqItems(newItems);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
@@ -195,13 +216,98 @@ const CreateTender = () => {
 
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Bill of Quantities (PDF)
+                                Bill of Quantities (Computo Metrico)
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-                                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                <span className="text-sm text-gray-500">Click to upload PDF</span>
-                                <input type="file" className="hidden" accept=".pdf" />
+
+                            {/* BoQ Input Mode Toggle */}
+                            <div className="flex bg-gray-100 p-1 rounded-md w-fit mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setBoqMode('file')}
+                                    className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'file' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                                >
+                                    Upload PDF (AI Extract)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setBoqMode('manual')}
+                                    className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'manual' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                                >
+                                    Manual Entry
+                                </button>
                             </div>
+
+                            {boqMode === 'file' ? (
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                                    <span className="text-sm text-gray-500">Click to upload PDF</span>
+                                    <input type="file" className="hidden" accept=".pdf" />
+                                </div>
+                            ) : (
+                                <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 uppercase">
+                                        <div className="col-span-6">Description</div>
+                                        <div className="col-span-2">Unit</div>
+                                        <div className="col-span-3">Quantity</div>
+                                        <div className="col-span-1"></div>
+                                    </div>
+
+                                    {boqItems.map((item, index) => (
+                                        <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                                            <div className="col-span-6">
+                                                <Input
+                                                    placeholder="Item description"
+                                                    value={item.description}
+                                                    onChange={(e) => handleBoqChange(index, 'description', e.target.value)}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <Input
+                                                    placeholder="mq, kg..."
+                                                    value={item.unit}
+                                                    onChange={(e) => handleBoqChange(index, 'unit', e.target.value)}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div className="col-span-3">
+                                                <Input
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleBoqChange(index, 'quantity', e.target.value)}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div className="col-span-1 text-center">
+                                                {boqItems.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeBoqItem(index)}
+                                                        className="text-red-500 hover:text-red-700 font-bold text-xl"
+                                                        title="Remove"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={addBoqItem}
+                                        className="w-full border-dashed"
+                                    >
+                                        + Add Item
+                                    </Button>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Manually enter the items that contractors will bid on.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-2 pt-4">
