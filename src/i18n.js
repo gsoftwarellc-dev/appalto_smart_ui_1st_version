@@ -271,6 +271,42 @@ const resources = {
                 }
             },
             "owner": {
+                "dashboard": {
+                    "title": "Platform Overview",
+                    "subtitle": "Welcome back, Owner. Here is the system health check.",
+                    "totalRevenue": "Total Revenue",
+                    "lastMonth": "from last month",
+                    "verifiedUsers": "Verified Users",
+                    "newThisWeek": "new this week",
+                    "activeTenders": "Active Tenders",
+                    "waitingApproval": "waiting for mock approval"
+                },
+                "revenue": {
+                    "title": "Revenue Dashboard",
+                    "subtitle": "Track financial performance, credit sales, and success fee collections.",
+                    "totalRevenueYtd": "Total Revenue (YTD)",
+                    "lastYear": "from last year",
+                    "creditSales": "Credit Sales",
+                    "successFees": "Success Fees",
+                    "pendingPayments": "Pending Payments",
+                    "overdueInvoices": "overdue invoices",
+                    "revenueOverview": "Revenue Overview",
+                    "monthlyGrowthTrend": "Monthly Growth Trend",
+                    "recentTransactions": "Recent Transactions",
+                    "viewAll": "View All"
+                },
+                "tenderOversight": {
+                    "title": "Tender Oversight",
+                    "subtitle": "Monitor all platform tenders, detect risks, and intervene manually if required.",
+                    "highRiskTenders": "High Risk Tenders",
+                    "immediateAttention": "Immediate attention needed",
+                    "stalledTenders": "Stalled Tenders",
+                    "overdue": "Overdue > 30 days",
+                    "totalActive": "Total Active",
+                    "avgBids": "Avg Bids/Tender",
+                    "searchPlaceholder": "Search title, client...",
+                    "allStatus": "All Status"
+                },
                 "configuration": {
                     "title": "Platform Configuration",
                     "subtitle": "Manage global system settings, pricing, and operational parameters.",
@@ -818,6 +854,42 @@ const resources = {
                 }
             },
             "owner": {
+                "dashboard": {
+                    "title": "Panoramica Piattaforma",
+                    "subtitle": "Bentornato, Proprietario. Ecco lo stato del sistema.",
+                    "totalRevenue": "Entrate Totali",
+                    "lastMonth": "rispetto al mese scorso",
+                    "verifiedUsers": "Utenti Verificati",
+                    "newThisWeek": "nuovi questa settimana",
+                    "activeTenders": "Gare Attive",
+                    "waitingApproval": "in attesa di approvazione"
+                },
+                "revenue": {
+                    "title": "Dashboard Entrate",
+                    "subtitle": "Traccia performance finanziarie, vendite crediti e commissioni di successo.",
+                    "totalRevenueYtd": "Entrate Totali (YTD)",
+                    "lastYear": "rispetto all'anno scorso",
+                    "creditSales": "Vendite Crediti",
+                    "successFees": "Commissioni Successo",
+                    "pendingPayments": "Pagamenti In Sospeso",
+                    "overdueInvoices": "fatture scadute",
+                    "revenueOverview": "Panoramica Entrate",
+                    "monthlyGrowthTrend": "Trend Crescita Mensile",
+                    "recentTransactions": "Transazioni Recenti",
+                    "viewAll": "Vedi Tutti"
+                },
+                "tenderOversight": {
+                    "title": "Supervisione Gare",
+                    "subtitle": "Monitora tutte le gare, rileva rischi e intervieni manualmente se necessario.",
+                    "highRiskTenders": "Gare ad Alto Rischio",
+                    "immediateAttention": "Richiesta attenzione immediata",
+                    "stalledTenders": "Gare in Stallo",
+                    "overdue": "Scadute > 30 giorni",
+                    "totalActive": "Totale Attive",
+                    "avgBids": "Media Offerte/Gara",
+                    "searchPlaceholder": "Cerca titolo, cliente...",
+                    "allStatus": "Tutti gli Stati"
+                },
                 "configuration": {
                     "title": "Configurazione Piattaforma",
                     "subtitle": "Gestisci impostazioni globali sistema, prezzi e parametri operativi.",

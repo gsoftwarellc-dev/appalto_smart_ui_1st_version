@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { DollarSign, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const RevenueDashboard = ({ embedded = false }) => {
+    const { t } = useTranslation();
     // Mock Data
     const revenueData = [
         { month: 'Jan', credits: 4000, fees: 2400 },
@@ -27,8 +29,8 @@ const RevenueDashboard = ({ embedded = false }) => {
         <div className="space-y-6">
             {!embedded && (
                 <div className="flex flex-col gap-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">Revenue Dashboard</h2>
-                    <p className="text-gray-500">Track financial performance, credit sales, and success fee collections.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.revenue.title')}</h2>
+                    <p className="text-gray-500">{t('owner.revenue.subtitle')}</p>
                 </div>
             )}
 
@@ -37,50 +39,50 @@ const RevenueDashboard = ({ embedded = false }) => {
                 {!embedded && ((
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Total Revenue (YTD)</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-500">{t('owner.revenue.totalRevenueYtd')}</CardTitle>
                             <DollarSign className="h-4 w-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">€45,231.00</div>
                             <div className="flex items-center text-xs text-green-600 mt-1">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> +20.1% from last year
+                                <ArrowUpRight className="h-3 w-3 mr-1" /> +20.1% {t('owner.revenue.lastYear')}
                             </div>
                         </CardContent>
                     </Card>
                 ))}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">Credit Sales</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-500">{t('owner.revenue.creditSales')}</CardTitle>
                         <CreditCard className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">€12,450.00</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" /> +4.5% from last month
+                            <ArrowUpRight className="h-3 w-3 mr-1" /> +4.5% {t('owner.dashboard.lastMonth')}
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">Success Fees</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-500">{t('owner.revenue.successFees')}</CardTitle>
                         <TrendingUp className="h-4 w-4 text-purple-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">€32,781.00</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" /> +12.3% from last month
+                            <ArrowUpRight className="h-3 w-3 mr-1" /> +12.3% {t('owner.dashboard.lastMonth')}
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">Pending Payments</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-500">{t('owner.revenue.pendingPayments')}</CardTitle>
                         <Activity className="h-4 w-4 text-amber-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">€3,450.00</div>
                         <div className="flex items-center text-xs text-red-600 mt-1">
-                            <ArrowDownRight className="h-3 w-3 mr-1" /> 7 overdue invoices
+                            <ArrowDownRight className="h-3 w-3 mr-1" /> 7 {t('owner.revenue.overdueInvoices')}
                         </div>
                     </CardContent>
                 </Card>
@@ -90,7 +92,7 @@ const RevenueDashboard = ({ embedded = false }) => {
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Revenue Overview</CardTitle>
+                        <CardTitle>{t('owner.revenue.revenueOverview')}</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -109,7 +111,7 @@ const RevenueDashboard = ({ embedded = false }) => {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Monthly Growth Trend</CardTitle>
+                        <CardTitle>{t('owner.revenue.monthlyGrowthTrend')}</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -130,8 +132,8 @@ const RevenueDashboard = ({ embedded = false }) => {
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle>Recent Transactions</CardTitle>
-                        <Button variant="outline" size="sm">View All</Button>
+                        <CardTitle>{t('owner.revenue.recentTransactions')}</CardTitle>
+                        <Button variant="outline" size="sm">{t('owner.revenue.viewAll')}</Button>
                     </div>
                 </CardHeader>
                 <CardContent>

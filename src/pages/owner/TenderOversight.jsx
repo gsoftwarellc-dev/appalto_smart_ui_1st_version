@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -23,6 +24,7 @@ import {
 } from "../../components/ui/Table";
 
 const TenderOversight = () => {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
 
@@ -65,33 +67,33 @@ const TenderOversight = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Tender Oversight</h2>
-                <p className="text-gray-500">Monitor all platform tenders, detect risks, and intervene manually if required.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.tenderOversight.title')}</h2>
+                <p className="text-gray-500">{t('owner.tenderOversight.subtitle')}</p>
             </div>
 
             {/* Risk Summary */}
             <div className="grid gap-4 md:grid-cols-4">
                 <Card className="bg-red-50 border-red-100">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-red-800">High Risk Tenders</CardTitle>
+                        <CardTitle className="text-sm font-medium text-red-800">{t('owner.tenderOversight.highRiskTenders')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-900">{tenders.filter(t => t.risk === 'High').length}</div>
-                        <p className="text-xs text-red-700">Immediate attention needed</p>
+                        <p className="text-xs text-red-700">{t('owner.tenderOversight.immediateAttention')}</p>
                     </CardContent>
                 </Card>
                 <Card className="bg-yellow-50 border-yellow-100">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-yellow-800">Stalled Tenders</CardTitle>
+                        <CardTitle className="text-sm font-medium text-yellow-800">{t('owner.tenderOversight.stalledTenders')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-yellow-900">{tenders.filter(t => t.status === 'Stalled').length}</div>
-                        <p className="text-xs text-yellow-700">Overdue > 30 days</p>
+                        <p className="text-xs text-yellow-700">{t('owner.tenderOversight.overdue')}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Total Active</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('owner.tenderOversight.totalActive')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{tenders.filter(t => ['Open', 'Review', 'Awarded'].includes(t.status)).length}</div>
@@ -99,7 +101,7 @@ const TenderOversight = () => {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Avg Bids/Tender</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('owner.tenderOversight.avgBids')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
@@ -116,7 +118,7 @@ const TenderOversight = () => {
                             <div className="relative w-full md:w-64">
                                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                                 <Input
-                                    placeholder="Search title, client..."
+                                    placeholder={t('owner.tenderOversight.searchPlaceholder')}
                                     className="pl-9"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -128,7 +130,7 @@ const TenderOversight = () => {
                                     onChange={(e) => setFilterStatus(e.target.value)}
                                     className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                 >
-                                    <option value="All">All Status</option>
+                                    <option value="All">{t('owner.tenderOversight.allStatus')}</option>
                                     <option value="Open">Open</option>
                                     <option value="Review">Review</option>
                                     <option value="Awarded">Awarded</option>
