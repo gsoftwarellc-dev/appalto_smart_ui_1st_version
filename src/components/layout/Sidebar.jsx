@@ -80,7 +80,7 @@ const Sidebar = () => {
                     className="flex w-full items-center px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
                     <LogOut className="mr-3 h-5 w-5" />
-                    {t('sidebar.logout')}
+                    {t('common.logout')}
                 </button>
                 <div className="mt-4 bg-gray-50 rounded-lg p-4">
                     <p className="text-xs text-gray-500 text-center">
