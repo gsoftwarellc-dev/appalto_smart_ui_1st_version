@@ -108,6 +108,81 @@ const resources = {
                     "accountCreated": "Account Created",
                     "totalTenders": "Total Tenders Created",
                     "totalBids": "Total Bids Managed"
+                },
+                "bidManagement": {
+                    "title": "Bid Management",
+                    "subtitle": "Select a project to view and manage bids",
+                    "searchPlaceholder": "Search projects...",
+                    "noProjects": "No projects found",
+                    "noProjectsDesc": "Try adjusting your search criteria.",
+                    "backToProjects": "Back to Projects",
+                    "allBids": "All Bids",
+                    "totalBids": "Total Bids",
+                    "bidsSealed": "Bids are Sealed",
+                    "bidsSealedDesc": "Offers will become visible automatically after the deadline ({{deadline}}).",
+                    "table": {
+                        "contractor": "Contractor",
+                        "tender": "Tender",
+                        "amount": "Bid Amount",
+                        "date": "Submission Date",
+                        "status": "Status",
+                        "actions": "Actions",
+                        "techScore": "Tech Score",
+                        "finScore": "Fin Score",
+                        "award": "Award",
+                        "awarded": "Awarded",
+                        "approve": "Approve",
+                        "reject": "Reject",
+                        "view": "View"
+                    },
+                    "noBids": "No bids yet",
+                    "noBidsDesc": "This project hasn't received any bids."
+                },
+                "contractorManagement": {
+                    "title": "Contractor Management",
+                    "subtitle": "View and manage all registered contractors.",
+                    "searchPlaceholder": "Search by name, location, or expertise...",
+                    "locationFilter": {
+                        "all": "All Locations"
+                    },
+                    "stats": {
+                        "total": "Total Contractors",
+                        "bids": "Total Bids",
+                        "awardRate": "Award Rate"
+                    },
+                    "card": {
+                        "totalBids": "Total Bids",
+                        "won": "Won",
+                        "lost": "Lost",
+                        "viewProfile": "View Profile"
+                    },
+                    "noResults": "No contractors found",
+                    "noResultsDesc": "Try adjusting your search criteria or location filter."
+                },
+                "documentManagement": {
+                    "title": "Document Management",
+                    "subtitle": "Access and manage all BOQs and contractor bid documents.",
+                    "searchPlaceholder": "Search by document, tender, or contractor...",
+                    "types": {
+                        "all": "All",
+                        "boq": "BOQ",
+                        "bid": "Bid"
+                    },
+                    "stats": {
+                        "total": "Total Documents",
+                        "boqFiles": "BOQ Files",
+                        "bidDocs": "Bid Documents"
+                    },
+                    "table": {
+                        "name": "Document Name",
+                        "type": "Type",
+                        "tender": "Tender",
+                        "contractor": "Contractor",
+                        "date": "Upload Date",
+                        "size": "Size",
+                        "action": "Action",
+                        "download": "Download"
+                    }
                 }
             },
             "contractor": {
@@ -335,85 +410,7 @@ const resources = {
                     "processing": "Processing..."
                 }
             },
-            "admin": {
-                "createTender": "Create Tender",
-                "tendersList": "Tenders List",
-                "bidManagement": {
-                    "title": "Bid Management",
-                    "subtitle": "Select a project to view and manage bids",
-                    "searchPlaceholder": "Search projects...",
-                    "noProjects": "No projects found",
-                    "noProjectsDesc": "Try adjusting your search criteria.",
-                    "backToProjects": "Back to Projects",
-                    "allBids": "All Bids",
-                    "totalBids": "Total Bids",
-                    "bidsSealed": "Bids are Sealed",
-                    "bidsSealedDesc": "Offers will become visible automatically after the deadline ({{deadline}}).",
-                    "table": {
-                        "contractor": "Contractor",
-                        "tender": "Tender",
-                        "amount": "Bid Amount",
-                        "date": "Submission Date",
-                        "status": "Status",
-                        "actions": "Actions",
-                        "techScore": "Tech Score",
-                        "finScore": "Fin Score",
-                        "award": "Award",
-                        "awarded": "Awarded",
-                        "approve": "Approve",
-                        "reject": "Reject",
-                        "view": "View"
-                    },
-                    "noBids": "No bids yet",
-                    "noBidsDesc": "This project hasn't received any bids."
-                },
-                "contractorManagement": {
-                    "title": "Contractor Management",
-                    "subtitle": "View and manage all registered contractors.",
-                    "searchPlaceholder": "Search by name, location, or expertise...",
-                    "locationFilter": {
-                        "all": "All Locations"
-                    },
-                    "stats": {
-                        "total": "Total Contractors",
-                        "bids": "Total Bids",
-                        "awardRate": "Award Rate"
-                    },
-                    "card": {
-                        "totalBids": "Total Bids",
-                        "won": "Won",
-                        "lost": "Lost",
-                        "viewProfile": "View Profile"
-                    },
-                    "noResults": "No contractors found",
-                    "noResultsDesc": "Try adjusting your search criteria or location filter."
-                },
-                "documentManagement": {
-                    "title": "Document Management",
-                    "subtitle": "Access and manage all BOQs and contractor bid documents.",
-                    "searchPlaceholder": "Search by document, tender, or contractor...",
-                    "types": {
-                        "all": "All",
-                        "boq": "BOQ",
-                        "bid": "Bid"
-                    },
-                    "stats": {
-                        "total": "Total Documents",
-                        "boqFiles": "BOQ Files",
-                        "bidDocs": "Bid Documents"
-                    },
-                    "table": {
-                        "name": "Document Name",
-                        "type": "Type",
-                        "tender": "Tender",
-                        "contractor": "Contractor",
-                        "date": "Upload Date",
-                        "size": "Size",
-                        "action": "Action",
-                        "download": "Download"
-                    }
-                }
-            },
+
             "sidebar": {
                 "dashboard": "Dashboard",
                 "createTender": "Create Tender",
@@ -658,6 +655,81 @@ const resources = {
                     "accountCreated": "Account Creato",
                     "totalTenders": "Tgare Create",
                     "totalBids": "Offerte Gestite"
+                },
+                "bidManagement": {
+                    "title": "Gestione Offerte",
+                    "subtitle": "Seleziona un progetto per visualizzare e gestire le offerte",
+                    "searchPlaceholder": "Cerca progetti...",
+                    "noProjects": "Nessun progetto trovato",
+                    "noProjectsDesc": "Prova a modificare i criteri di ricerca.",
+                    "backToProjects": "Torna ai Progetti",
+                    "allBids": "Tutte le Offerte",
+                    "totalBids": "Totale Offerte",
+                    "bidsSealed": "Le offerte sono sigillate",
+                    "bidsSealedDesc": "Le offerte diventeranno visibili automaticamente dopo la scadenza ({{deadline}}).",
+                    "table": {
+                        "contractor": "Impresa",
+                        "tender": "Gara",
+                        "amount": "Importo Offerta",
+                        "date": "Data Invio",
+                        "status": "Stato",
+                        "actions": "Azioni",
+                        "techScore": "Punt. Tecnico",
+                        "finScore": "Punt. Economico",
+                        "award": "Assegna",
+                        "awarded": "Assegnata",
+                        "approve": "Approva",
+                        "reject": "Rifiuta",
+                        "view": "Vedi"
+                    },
+                    "noBids": "Nessuna offerta",
+                    "noBidsDesc": "Questo progetto non ha ancora ricevuto offerte."
+                },
+                "contractorManagement": {
+                    "title": "Gestione Imprese",
+                    "subtitle": "Visualizza e gestisci tutte le imprese registrate.",
+                    "searchPlaceholder": "Cerca per nome, luogo o competenza...",
+                    "locationFilter": {
+                        "all": "Tutte le Località"
+                    },
+                    "stats": {
+                        "total": "Totale Imprese",
+                        "bids": "Totale Offerte",
+                        "awardRate": "Tasso Vincita"
+                    },
+                    "card": {
+                        "totalBids": "Offerte Totali",
+                        "won": "Vinte",
+                        "lost": "Perse",
+                        "viewProfile": "Vedi Profilo"
+                    },
+                    "noResults": "Nessuna impresa trovata",
+                    "noResultsDesc": "Prova a modificare i criteri di ricerca o il filtro località."
+                },
+                "documentManagement": {
+                    "title": "Gestione Documenti",
+                    "subtitle": "Accedi e gestisci tutti i computi metrici e i documenti di offerta.",
+                    "searchPlaceholder": "Cerca per documento, gara o impresa...",
+                    "types": {
+                        "all": "Tutti",
+                        "boq": "Computo",
+                        "bid": "Offerta"
+                    },
+                    "stats": {
+                        "total": "Totale Documenti",
+                        "boqFiles": "File Computo",
+                        "bidDocs": "Doc. Offerta"
+                    },
+                    "table": {
+                        "name": "Nome Documento",
+                        "type": "Tipo",
+                        "tender": "Gara",
+                        "contractor": "Impresa",
+                        "date": "Data Caricamento",
+                        "size": "Dimensione",
+                        "action": "Azione",
+                        "download": "Scarica"
+                    }
                 }
             },
             "contractor": {
@@ -885,85 +957,7 @@ const resources = {
                     "processing": "Elaborazione..."
                 }
             },
-            "admin": {
-                "createTender": "Crea Gara",
-                "tendersList": "Lista Gare",
-                "bidManagement": {
-                    "title": "Gestione Offerte",
-                    "subtitle": "Seleziona un progetto per visualizzare e gestire le offerte",
-                    "searchPlaceholder": "Cerca progetti...",
-                    "noProjects": "Nessun progetto trovato",
-                    "noProjectsDesc": "Prova a modificare i criteri di ricerca.",
-                    "backToProjects": "Torna ai Progetti",
-                    "allBids": "Tutte le Offerte",
-                    "totalBids": "Totale Offerte",
-                    "bidsSealed": "Le offerte sono sigillate",
-                    "bidsSealedDesc": "Le offerte diventeranno visibili automaticamente dopo la scadenza ({{deadline}}).",
-                    "table": {
-                        "contractor": "Impresa",
-                        "tender": "Gara",
-                        "amount": "Importo Offerta",
-                        "date": "Data Invio",
-                        "status": "Stato",
-                        "actions": "Azioni",
-                        "techScore": "Punt. Tecnico",
-                        "finScore": "Punt. Economico",
-                        "award": "Assegna",
-                        "awarded": "Assegnata",
-                        "approve": "Approva",
-                        "reject": "Rifiuta",
-                        "view": "Vedi"
-                    },
-                    "noBids": "Nessuna offerta",
-                    "noBidsDesc": "Questo progetto non ha ancora ricevuto offerte."
-                },
-                "contractorManagement": {
-                    "title": "Gestione Imprese",
-                    "subtitle": "Visualizza e gestisci tutte le imprese registrate.",
-                    "searchPlaceholder": "Cerca per nome, luogo o competenza...",
-                    "locationFilter": {
-                        "all": "Tutte le Località"
-                    },
-                    "stats": {
-                        "total": "Totale Imprese",
-                        "bids": "Totale Offerte",
-                        "awardRate": "Tasso Vincita"
-                    },
-                    "card": {
-                        "totalBids": "Offerte Totali",
-                        "won": "Vinte",
-                        "lost": "Perse",
-                        "viewProfile": "Vedi Profilo"
-                    },
-                    "noResults": "Nessuna impresa trovata",
-                    "noResultsDesc": "Prova a modificare i criteri di ricerca o il filtro località."
-                },
-                "documentManagement": {
-                    "title": "Gestione Documenti",
-                    "subtitle": "Accedi e gestisci tutti i computi metrici e i documenti di offerta.",
-                    "searchPlaceholder": "Cerca per documento, gara o impresa...",
-                    "types": {
-                        "all": "Tutti",
-                        "boq": "Computo",
-                        "bid": "Offerta"
-                    },
-                    "stats": {
-                        "total": "Totale Documenti",
-                        "boqFiles": "File Computo",
-                        "bidDocs": "Doc. Offerta"
-                    },
-                    "table": {
-                        "name": "Nome Documento",
-                        "type": "Tipo",
-                        "tender": "Gara",
-                        "contractor": "Impresa",
-                        "date": "Data Caricamento",
-                        "size": "Dimensione",
-                        "action": "Azione",
-                        "download": "Scarica"
-                    }
-                }
-            },
+
             "sidebar": {
                 "dashboard": "Dashboard",
                 "createTender": "Crea Gara",
