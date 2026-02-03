@@ -459,6 +459,7 @@ const resources = {
             },
 
             "sidebar": {
+                "ownerPanel": "OWNER PANEL",
                 "dashboard": "Dashboard",
                 "createTender": "Create Tender",
                 "tendersList": "Tenders List",

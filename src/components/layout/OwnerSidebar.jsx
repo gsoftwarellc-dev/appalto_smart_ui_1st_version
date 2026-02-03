@@ -49,7 +49,7 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
                 <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Shield className="h-8 w-8 text-blue-400" />
-                        <span className="font-bold text-lg tracking-wider">{t('owner.sidebar.panelTitle')}</span>
+                        <span className="font-bold text-lg tracking-wider">{t('sidebar.ownerPanel')}</span>
                     </div>
                     {/* Close button for mobile */}
                     <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
