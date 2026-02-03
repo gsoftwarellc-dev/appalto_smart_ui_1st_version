@@ -48,7 +48,7 @@ const Sidebar = () => {
     const links = user?.role === 'admin' ? adminLinks : contractorLinks;
 
     return (
-        <aside className="w-64 bg-white shadow-xl flex flex-col z-10 transition-all duration-300">
+        <aside className="w-64 bg-white shadow-xl flex flex-col z-50 transition-all duration-300">
             <div className="p-6 border-b border-gray-100 flex items-center justify-center">
                 <img src="/logo.jpg" alt="Appalto Smart" className="w-full h-auto rounded object-contain max-h-16" />
             </div>

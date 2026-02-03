@@ -370,7 +370,7 @@ const TenderDetails = () => {
                 </div>
 
                 {/* Right Column: Key Actions */}
-                <div className="w-full md:w-80 space-y-6">
+                <div className="w-full lg:w-[400px] space-y-6">
                     {/* Contractor View: Submit Bid */}
                     {user?.role === 'contractor' && !submitted && isUnlocked && (
                         <Card className="border-blue-100 shadow-md sticky top-6">
@@ -417,7 +417,7 @@ const TenderDetails = () => {
                                                 />
                                             </div>
                                         )}
-                                        <div className="bg-white rounded-md border border-gray-200 overflow-hidden text-xs">
+                                        <div className="bg-white rounded-md border border-gray-200 overflow-x-auto text-xs">
                                             <table className="w-full">
                                                 <thead className="bg-gray-50 text-left">
                                                     <tr>
