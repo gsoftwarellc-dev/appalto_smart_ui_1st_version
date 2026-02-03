@@ -45,11 +45,11 @@ const TenderDetails = () => {
         const currentCredits = user?.credits || 0;
 
         if (currentCredits < cost) {
-            alert(`Insufficient credits! You need ${cost} credits but have ${currentCredits}. Please purchase a credit package.`);
+            alert(t('tender.details.insufficientCredits', { cost, credits: currentCredits }));
             return;
         }
 
-        const confirm = window.confirm(`Unlock this tender for ${cost} credits? (Balance: ${currentCredits})`);
+        const confirm = window.confirm(t('tender.details.unlockConfirm', { cost, credits: currentCredits }));
         if (confirm) {
             const updatedUser = { ...user, credits: currentCredits - cost };
             updateUser(updatedUser);
@@ -57,7 +57,6 @@ const TenderDetails = () => {
         }
     };
 
-    // Mock Tender Data
     // Mock Tender Data
     const tender = {
         id: id,
@@ -139,9 +138,16 @@ const TenderDetails = () => {
         }
     };
 
+    const [boqMode, setBoqMode] = useState('manual'); // 'manual' or 'file' (AI)
+
     const addItem = () => {
         const newId = Math.max(...editableItems.map(i => i.id), 0) + 1;
         setEditableItems([...editableItems, { id: newId, description: '', unit: '', quantity: 0, price: 0 }]);
+    };
+
+    const removeItem = (index) => {
+        const newItems = editableItems.filter((_, i) => i !== index);
+        setEditableItems(newItems);
     };
 
     const [submitting, setSubmitting] = useState(false);
@@ -209,7 +215,7 @@ const TenderDetails = () => {
         <div className="space-y-6">
             <Button variant="ghost" onClick={() => navigate(-1)} className="flex items-center gap-2 pl-0 hover:bg-transparent hover:text-blue-600">
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                {t('tender.details.back')}
             </Button>
 
             <div className="flex flex-col md:flex-row gap-6">
@@ -231,7 +237,7 @@ const TenderDetails = () => {
                                         </span>
                                         <span>•</span>
                                         <span className="flex items-center gap-1">
-                                            Deadline: {tender.deadline}
+                                            {t('tender.details.deadline')}: {tender.deadline}
                                             (<span className="text-red-600"><CountdownTimer deadline={tender.deadline} /></span>)
                                         </span>
                                     </div>
@@ -245,7 +251,7 @@ const TenderDetails = () => {
                             {isUnlocked && <Timeline currentStep={tender.timelineStep} />}
 
                             <div>
-                                <h4 className="font-semibold mb-2">Description</h4>
+                                <h4 className="font-semibold mb-2">{t('tender.details.description')}</h4>
                                 <p className={`text-gray-600 ${!isUnlocked ? 'italic text-gray-500 blur-[2px] select-none' : ''}`}>
                                     {isUnlocked ? tender.description : "This tender description includes full project scope, specific requirements, and site conditions. Unlock to view full details."}
                                 </p>
@@ -253,7 +259,7 @@ const TenderDetails = () => {
 
                             {tender.budget && (
                                 <div>
-                                    <h4 className="font-semibold mb-2">Importo stimato</h4>
+                                    <h4 className="font-semibold mb-2">{t('tender.details.budget')}</h4>
                                     <p className="text-gray-600 font-mono">{tender.budget}</p>
                                 </div>
                             )}
@@ -262,11 +268,11 @@ const TenderDetails = () => {
                             {isUnlocked ? (
                                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <Download className="h-4 w-4 text-blue-600" /> Documents
+                                        <Download className="h-4 w-4 text-blue-600" /> {t('tender.details.documents')}
                                     </h4>
                                     <div className="flex items-center justify-between">
                                         <div className="text-sm">
-                                            <p className="font-medium text-gray-700">Bill of Quantities (BOQ)</p>
+                                            <p className="font-medium text-gray-700">{t('tender.details.boq')}</p>
                                             <p className="text-xs text-gray-500">PDF, 2.5MB</p>
                                         </div>
                                         <Button
@@ -274,12 +280,12 @@ const TenderDetails = () => {
                                             size="sm"
                                             onClick={() => setDownloaded(true)}
                                         >
-                                            {downloaded ? 'Downloaded' : 'Download'}
+                                            {downloaded ? t('tender.details.downloaded') : t('tender.details.download')}
                                         </Button>
                                     </div>
                                     {downloaded && (
                                         <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                                            <CheckCircle className="h-3 w-3" /> Downloaded on {new Date().toLocaleDateString()}
+                                            <CheckCircle className="h-3 w-3" /> {t('tender.details.downloaded')} on {new Date().toLocaleDateString()}
                                         </p>
                                     )}
                                 </div>
@@ -289,16 +295,16 @@ const TenderDetails = () => {
                                         <Lock className="h-6 w-6 text-gray-400" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-900">Restricted Access</h4>
+                                        <h4 className="font-bold text-gray-900">{t('tender.details.locked')}</h4>
                                         <p className="text-sm text-gray-500 max-w-sm mx-auto mt-1">
-                                            This tender requires <strong>{getCreditCost(tender.budget)} credits</strong> based on the budget range.
+                                            {t('tender.details.lockedDesc', { cost: getCreditCost(tender.budget) })}
                                         </p>
                                         <p className="text-xs text-blue-600 mt-2">
-                                            Your Balance: {user?.credits || 0} Credits
+                                            {t('tender.details.balance', { credits: user?.credits || 0 })}
                                         </p>
                                     </div>
                                     <Button onClick={handleUnlock} className="bg-amber-600 hover:bg-amber-700 text-white shadow-md">
-                                        Unlock for {getCreditCost(tender.budget)} Credits
+                                        {t('tender.details.unlock', { cost: getCreditCost(tender.budget) })}
                                     </Button>
                                 </div>
                             )}
@@ -310,7 +316,7 @@ const TenderDetails = () => {
                     {user?.role === 'admin' && (
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Received Bids ({bids.length})</CardTitle>
+                                <CardTitle>{t('admin.bidManagement.totalBids')} ({bids.length})</CardTitle>
                                 {new Date(tender.deadline) < new Date() && (
                                     <Button variant="outline" size="sm" className="gap-2">
                                         <Download className="h-4 w-4" /> Export Comparison (CSV)
@@ -321,20 +327,20 @@ const TenderDetails = () => {
                                 {new Date(tender.deadline) > new Date() ? (
                                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
                                         <Lock className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                                        <h3 className="font-semibold text-amber-800">Bids are Sealed</h3>
+                                        <h3 className="font-semibold text-amber-800">{t('admin.bidManagement.bidsSealed')}</h3>
                                         <p className="text-amber-700 text-sm mt-1">
-                                            Offers will become visible automatically after the deadline ({tender.deadline}).
+                                            {t('admin.bidManagement.bidsSealedDesc', { deadline: tender.deadline })}
                                         </p>
                                     </div>
                                 ) : (
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Contractor</TableHead>
-                                                <TableHead>Amount</TableHead>
-                                                <TableHead className="w-24">Tech Score</TableHead>
-                                                <TableHead className="w-24">Fin Score</TableHead>
-                                                <TableHead className="text-right">Action</TableHead>
+                                                <TableHead>{t('admin.bidManagement.table.contractor')}</TableHead>
+                                                <TableHead>{t('admin.bidManagement.table.amount')}</TableHead>
+                                                <TableHead className="w-24">{t('admin.bidManagement.table.techScore')}</TableHead>
+                                                <TableHead className="w-24">{t('admin.bidManagement.table.finScore')}</TableHead>
+                                                <TableHead className="text-right">{t('admin.bidManagement.table.actions')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -350,7 +356,7 @@ const TenderDetails = () => {
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <Button size="sm" onClick={() => handleAwardClick(bid)} disabled={isAwarded}>
-                                                            {isAwarded ? 'Awarded' : 'Award'}
+                                                            {isAwarded ? t('admin.bidManagement.table.awarded') : t('admin.bidManagement.table.award')}
                                                         </Button>
                                                     </TableCell>
                                                 </TableRow>
@@ -374,16 +380,53 @@ const TenderDetails = () => {
                             <CardContent className="pt-6">
                                 <form onSubmit={handleBidSubmit} className="space-y-6">
                                     <div className="space-y-4">
-                                        <h4 className="font-semibold text-sm">Computo metrico estimativo</h4>
+                                        <h4 className="font-semibold text-sm">{t('tender.boq.boqTitle')}</h4>
+
+                                        {/* BOQ Mode Toggle */}
+                                        <div className="flex bg-gray-100 p-1 rounded-md w-fit mb-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setBoqMode('manual')}
+                                                className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'manual' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                                            >
+                                                {t('tender.boq.manual')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setBoqMode('file')}
+                                                className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'file' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                                            >
+                                                {t('tender.boq.ai')}
+                                            </button>
+                                        </div>
+
+                                        {boqMode === 'file' && (
+                                            <div className="border border-dashed border-blue-300 bg-blue-50/30 rounded p-6 text-center text-sm text-gray-500 hover:bg-blue-50 cursor-pointer transition-colors relative mb-4">
+                                                <Upload className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                                                <p className="font-medium text-blue-700">Carica Computo Metrico (PDF/Excel)</p>
+                                                <p className="text-xs text-gray-400 mt-1">{t('tender.boq.uploadDesc')}</p>
+                                                <input
+                                                    type="file"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    accept=".pdf,.xlsx,.xls"
+                                                    onChange={(e) => {
+                                                        // Mock AI Extraction: Just keep the current items for now but pretend it worked
+                                                        alert("AI Extraction simulated: Table updated from file.");
+                                                        setBoqMode('manual'); // Switch back to manual so they can review
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="bg-white rounded-md border border-gray-200 overflow-hidden text-xs">
                                             <table className="w-full">
                                                 <thead className="bg-gray-50 text-left">
                                                     <tr>
-                                                        <th className="p-2 font-medium text-gray-500">Voce computo</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-14">Unità</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-16">Quantità</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-20">Prezzo (€)</th>
-                                                        <th className="p-2 font-medium text-gray-500 w-24 text-right">Totale (€)</th>
+                                                        <th className="p-2 font-medium text-gray-500">{t('tender.boq.item')}</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-14">{t('tender.boq.unit')}</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-16">{t('tender.boq.qty')}</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-20">{t('tender.boq.price')}</th>
+                                                        <th className="p-2 font-medium text-gray-500 w-24 text-right">{t('tender.boq.total')}</th>
+                                                        <th className="p-2 w-8"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100">
@@ -428,10 +471,20 @@ const TenderDetails = () => {
                                                             <td className="p-2 text-right text-sm text-gray-700">
                                                                 €{((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0)).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
+                                                            <td className="p-2 text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeItem(index)}
+                                                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                    title="Rimuovi voce"
+                                                                >
+                                                                    &times;
+                                                                </button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                     <tr>
-                                                        <td colSpan="5" className="p-2">
+                                                        <td colSpan="6" className="p-2">
                                                             <Button
                                                                 type="button"
                                                                 variant="ghost"
@@ -439,14 +492,14 @@ const TenderDetails = () => {
                                                                 onClick={addItem}
                                                                 className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-8 px-2"
                                                             >
-                                                                + Aggiungi Voce
+                                                                {t('tender.boq.addItem')}
                                                             </Button>
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot className="bg-gray-50 font-bold border-t border-gray-200">
                                                     <tr>
-                                                        <td colSpan="3" className="p-2 text-right pt-4">Sconto / Ribasso:</td>
+                                                        <td colSpan="3" className="p-2 text-right pt-4">{t('tender.boq.discount')}</td>
                                                         <td colSpan="2" className="p-2 text-right pt-4">
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <input
@@ -477,7 +530,7 @@ const TenderDetails = () => {
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td colSpan="3" className="p-2 text-right text-lg">Progetto totale:</td>
+                                                        <td colSpan="3" className="p-2 text-right text-lg">{t('tender.boq.projectTotal')}</td>
                                                         <td colSpan="2" className="p-2 text-right text-blue-700 text-lg">€{totalBidAmount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                     </tr>
                                                 </tfoot>
@@ -486,7 +539,7 @@ const TenderDetails = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Carica preventivo firmato (PDF) *</label>
+                                        <label className="text-sm font-medium">{t('tender.boq.uploadPreventivo')}</label>
                                         <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer relative">
                                             <Upload className="h-5 w-5 mx-auto mb-1" />
                                             <span>{bidFile ? bidFile.name : "Seleziona PDF firmato"}</span>
@@ -509,13 +562,12 @@ const TenderDetails = () => {
                                     <div className="flex items-start space-x-2 border p-3 rounded-md bg-blue-50 border-blue-100 mb-4">
                                         <input type="checkbox" id="fee-agree" className="mt-1" required />
                                         <label htmlFor="fee-agree" className="text-sm text-blue-800">
-                                            Accetto che in caso di aggiudicazione, una commissione di successo del <strong>3%</strong> sul valore del contratto
-                                            ({(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}) sarà dovuta alla piattaforma.
+                                            {t('tender.boq.feeAgreement', { fee: (totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' }) })}
                                         </label>
                                     </div>
 
                                     <Button className="w-full" type="submit" disabled={submitting || totalBidAmount === 0 || !bidFile}>
-                                        {submitting ? 'Invio in corso...' : `Invia offerta (€${totalBidAmount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                        {submitting ? t('tender.boq.submitting') : t('tender.boq.submit', { amount: totalBidAmount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}
                                     </Button>
                                 </form>
                             </CardContent>
@@ -526,11 +578,11 @@ const TenderDetails = () => {
                         <Card className="bg-green-50 border-green-200 sticky top-6">
                             <CardContent className="pt-6 text-center space-y-2">
                                 <CheckCircle className="h-10 w-10 text-green-600 mx-auto" />
-                                <h3 className="font-bold text-green-800">Bid Submitted!</h3>
-                                <p className="text-sm text-green-600">Your offer has been sent successfully.</p>
+                                <h3 className="font-bold text-green-800">{t('tender.boq.submitted')}</h3>
+                                <p className="text-sm text-green-600">{t('tender.boq.submittedDesc')}</p>
                                 <p className="text-xs text-green-500 pt-2">{new Date().toLocaleString()}</p>
                                 <Button variant="outline" size="sm" className="mt-2 bg-white hover:bg-green-50" onClick={() => navigate('/contractor/bids')}>
-                                    View My Bids
+                                    {t('tender.boq.viewBids')}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -541,22 +593,21 @@ const TenderDetails = () => {
                         <Card className="bg-blue-50 border-blue-200 sticky top-6">
                             <CardHeader>
                                 <CardTitle className="text-blue-800 flex items-center gap-2">
-                                    <Info className="h-5 w-5" /> Action Required: Success Fee
+                                    <Info className="h-5 w-5" /> {t('tender.award.successFeeTitle')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-blue-700">
-                                    Congratulations! You have been awarded this tender.
-                                    To finalize the procedure and receive the contact details of the client, please proceed with the payment of the success fee.
+                                    {t('tender.award.successFeeDesc')}
                                 </p>
 
                                 <div className="bg-white p-4 rounded border border-blue-100">
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-gray-600">Contract Value:</span>
+                                        <span className="text-gray-600">{t('tender.award.contractValue')}</span>
                                         <span className="font-medium">€{totalBidAmount.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-gray-600">Success Fee (3%):</span>
+                                        <span className="text-gray-600">{t('tender.award.successFee')}</span>
                                         <span className="font-bold text-blue-600">
                                             {(totalBidAmount * 0.03).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}
                                         </span>
@@ -564,7 +615,7 @@ const TenderDetails = () => {
                                 </div>
 
                                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                                    Pay Success Fee
+                                    {t('tender.award.payButton')}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -576,10 +627,9 @@ const TenderDetails = () => {
                             <CardContent className="p-4 flex items-start gap-3">
                                 <Info className="h-5 w-5 text-amber-600 mt-0.5" />
                                 <div>
-                                    <h4 className="font-semibold text-amber-800">Pending Regularization</h4>
+                                    <h4 className="font-semibold text-amber-800">{t('tender.award.pendingRegularization')}</h4>
                                     <p className="text-sm text-amber-700">
-                                        The tender has been awarded. Waiting for the contractor to pay the success fee.
-                                        Once paid, you will receive a notification.
+                                        {t('tender.award.pendingDesc')}
                                     </p>
                                 </div>
                             </CardContent>
@@ -593,31 +643,31 @@ const TenderDetails = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <Card className="w-full max-w-md bg-white shadow-xl animate-in fade-in zoom-in-95 duration-200">
                         <CardHeader>
-                            <CardTitle>Award Tender</CardTitle>
+                            <CardTitle>{t('tender.award.modalTitle')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={confirmAward} className="space-y-4">
                                 <p className="text-sm text-gray-600">
-                                    You are awarding this tender to <strong>{awardingBid.contractor}</strong> for <strong>{awardingBid.amount}</strong>.
+                                    {t('tender.award.modalDesc', { contractor: awardingBid.contractor, amount: awardingBid.amount })}
                                 </p>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">I am acting as:</label>
+                                    <label className="text-sm font-medium">{t('tender.award.roleLabel')}</label>
                                     <select
                                         className="w-full border rounded p-2 text-sm bg-white"
                                         value={clientRole}
                                         onChange={(e) => setClientRole(e.target.value)}
                                     >
-                                        <option value="admin">Condominium Administrator</option>
-                                        <option value="technician">Delegated Technician</option>
+                                        <option value="admin">{t('tender.award.adminRole')}</option>
+                                        <option value="technician">{t('tender.award.techRole')}</option>
                                     </select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">
-                                        Upload Required Document: <br />
+                                        {t('tender.award.uploadLabel')} <br />
                                         <span className="text-blue-600 font-normal">
-                                            {clientRole === 'admin' ? "Assembly Minutes (PDF)" : "Signed Quotation Acceptance (PDF)"}
+                                            {clientRole === 'admin' ? t('tender.award.assemblyMinutes') : t('tender.award.signedQuote')}
                                         </span>
                                     </label>
                                     <div className="border border-dashed border-gray-300 rounded p-4 text-center text-sm text-gray-500 hover:bg-gray-50 cursor-pointer relative">
@@ -633,15 +683,15 @@ const TenderDetails = () => {
                                     </div>
                                     <p className="text-xs text-gray-400">
                                         {clientRole === 'admin'
-                                            ? "Required: Minutes of the assembly assigning the contract."
-                                            : "Required: Quotation signed by the client for acceptance."}
+                                            ? t('tender.award.uploadHintAdmin')
+                                            : t('tender.award.uploadHintTech')}
                                     </p>
                                 </div>
 
                                 <div className="flex justify-end gap-2 pt-2">
-                                    <Button variant="ghost" type="button" onClick={() => setAwardingBid(null)}>Cancel</Button>
+                                    <Button variant="ghost" type="button" onClick={() => setAwardingBid(null)}>{t('tender.award.cancel')}</Button>
                                     <Button type="submit" disabled={submitting || !awardFile}>
-                                        {submitting ? 'Processing...' : 'Confirm Award'}
+                                        {submitting ? t('tender.award.processing') : t('tender.award.confirm')}
                                     </Button>
                                 </div>
                             </form>

@@ -3,13 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { User, Mail, Lock, Upload, Camera } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AdminProfile = () => {
+    const { t } = useTranslation();
     const [profileData, setProfileData] = useState({
         name: 'Admin User',
         email: 'admin@appalto.com',
         phone: '+39 123 456 7890',
-        role: 'System Administrator',
+        role: 'Amm.re Condominio',
+        piva: '',
+        studioAddress: '',
+        studioCity: '',
+        studioProvince: ''
     });
 
     const [passwordData, setPasswordData] = useState({
@@ -24,25 +30,25 @@ const AdminProfile = () => {
         e.preventDefault();
         setIsEditing(false);
         // Mock update - would call API in real app
-        alert('Profile updated successfully!');
+        alert(t('admin.profile.save') + ' success!');
     };
 
     const handlePasswordChange = (e) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert('Passwords do not match!');
+            alert(t('admin.profile.passwordMismatch') || 'Passwords do not match!');
             return;
         }
         // Mock update - would call API in real app
-        alert('Password changed successfully!');
+        alert(t('admin.profile.updatePassword') + ' success!');
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     };
 
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">My Profile</h2>
-                <p className="text-gray-500">Manage your account settings and preferences</p>
+                <h2 className="text-3xl font-bold tracking-tight">{t('admin.profile.title')}</h2>
+                <p className="text-gray-500">{t('admin.profile.subtitle')}</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -63,7 +69,7 @@ const AdminProfile = () => {
                                 <p className="text-sm text-gray-500">{profileData.role}</p>
                             </div>
                             <Button variant="outline" size="sm" className="w-full">
-                                <Upload className="h-4 w-4 mr-2" /> Upload Photo
+                                <Upload className="h-4 w-4 mr-2" /> {t('admin.profile.uploadPhoto')}
                             </Button>
                         </div>
                     </CardContent>
@@ -72,10 +78,10 @@ const AdminProfile = () => {
                 {/* Profile Information */}
                 <Card className="md:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Profile Information</CardTitle>
+                        <CardTitle>{t('admin.profile.infoTitle')}</CardTitle>
                         {!isEditing && (
                             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                                Edit Profile
+                                {t('admin.profile.edit')}
                             </Button>
                         )}
                     </CardHeader>
@@ -84,7 +90,7 @@ const AdminProfile = () => {
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Full Name
+                                        {t('admin.profile.fullName')}
                                     </label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -99,7 +105,7 @@ const AdminProfile = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
+                                        {t('admin.profile.email')}
                                     </label>
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -114,7 +120,7 @@ const AdminProfile = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone
+                                        {t('admin.profile.phone')}
                                     </label>
                                     <Input
                                         type="tel"
@@ -124,23 +130,76 @@ const AdminProfile = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Role
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                                        {t('admin.profile.role')}
+                                    </label>
+                                    <select
+                                        value={profileData.role === 'System Administrator' ? 'Amm.re Condominio' : profileData.role}
+                                        onChange={(e) => setProfileData({ ...profileData, role: e.target.value })}
+                                        disabled={!isEditing}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="Amm.re Condominio">Amm.re Condominio</option>
+                                        <option value="Tecnico Delegato">Tecnico Delegato</option>
+                                    </select>
+                                </div>
+
+                                {/* New Fields */}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                                        {t('admin.profile.vat')}
                                     </label>
                                     <Input
                                         type="text"
-                                        value={profileData.role}
-                                        disabled
+                                        placeholder={t('admin.profile.vat_placeholder')}
+                                        value={profileData.piva || ''}
+                                        onChange={(e) => setProfileData({ ...profileData, piva: e.target.value })}
+                                        className={(!profileData.piva || profileData.piva.length !== 11) && isEditing ? "border-red-300 ring-red-200" : ""}
+                                        disabled={!isEditing}
+                                        maxLength={11}
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">{t('admin.profile.vat_placeholder')}</p>
+                                </div>
+
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="block text-sm font-bold text-gray-700">
+                                        {t('admin.profile.studio')}
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                        <Input
+                                            type="text"
+                                            placeholder={t('admin.profile.address_ph')}
+                                            value={profileData.studioAddress || ''}
+                                            onChange={(e) => setProfileData({ ...profileData, studioAddress: e.target.value })}
+                                            disabled={!isEditing}
+                                        />
+                                        <Input
+                                            type="text"
+                                            placeholder={t('admin.profile.city_ph')}
+                                            value={profileData.studioCity || ''}
+                                            onChange={(e) => setProfileData({ ...profileData, studioCity: e.target.value })}
+                                            disabled={!isEditing}
+                                        />
+                                        <Input
+                                            type="text"
+                                            placeholder={t('admin.profile.province_ph')}
+                                            value={profileData.studioProvince || ''}
+                                            onChange={(e) => setProfileData({ ...profileData, studioProvince: e.target.value })}
+                                            disabled={!isEditing}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        {t('admin.profile.mandatory_note')}
+                                    </p>
                                 </div>
                             </div>
                             {isEditing && (
-                                <div className="flex gap-2 justify-end">
+                                <div className="flex gap-2 justify-end mt-4">
                                     <Button variant="outline" type="button" onClick={() => setIsEditing(false)}>
-                                        Cancel
+                                        {t('admin.profile.cancel')}
                                     </Button>
                                     <Button type="submit">
-                                        Save Changes
+                                        {t('admin.profile.save')}
                                     </Button>
                                 </div>
                             )}
@@ -152,13 +211,13 @@ const AdminProfile = () => {
             {/* Change Password Card */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
+                    <CardTitle>{t('admin.profile.changePassword')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Current Password
+                                {t('admin.profile.currentPassword')}
                             </label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -167,13 +226,13 @@ const AdminProfile = () => {
                                     className="pl-10"
                                     value={passwordData.currentPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                    placeholder="Enter current password"
+                                    placeholder={t('admin.profile.currentPassword')}
                                 />
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                New Password
+                                {t('admin.profile.newPassword')}
                             </label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -182,13 +241,13 @@ const AdminProfile = () => {
                                     className="pl-10"
                                     value={passwordData.newPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                    placeholder="Enter new password"
+                                    placeholder={t('admin.profile.newPassword')}
                                 />
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Confirm New Password
+                                {t('admin.profile.confirmPassword')}
                             </label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -197,12 +256,12 @@ const AdminProfile = () => {
                                     className="pl-10"
                                     value={passwordData.confirmPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                    placeholder="Confirm new password"
+                                    placeholder={t('admin.profile.confirmPassword')}
                                 />
                             </div>
                         </div>
                         <Button type="submit">
-                            Update Password
+                            {t('admin.profile.updatePassword')}
                         </Button>
                     </form>
                 </CardContent>
@@ -211,24 +270,24 @@ const AdminProfile = () => {
             {/* Account Activity */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Account Activity</CardTitle>
+                    <CardTitle>{t('admin.profile.accountActivity')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                            <span className="text-sm text-gray-600">Last Login</span>
+                            <span className="text-sm text-gray-600">{t('admin.profile.lastLogin')}</span>
                             <span className="text-sm font-medium">Today at 10:30 AM</span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                            <span className="text-sm text-gray-600">Account Created</span>
+                            <span className="text-sm text-gray-600">{t('admin.profile.accountCreated')}</span>
                             <span className="text-sm font-medium">January 15, 2026</span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                            <span className="text-sm text-gray-600">Total Tenders Created</span>
+                            <span className="text-sm text-gray-600">{t('admin.profile.totalTenders')}</span>
                             <span className="text-sm font-medium">12</span>
                         </div>
                         <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">Total Bids Managed</span>
+                            <span className="text-sm text-gray-600">{t('admin.profile.totalBids')}</span>
                             <span className="text-sm font-medium">28</span>
                         </div>
                     </div>

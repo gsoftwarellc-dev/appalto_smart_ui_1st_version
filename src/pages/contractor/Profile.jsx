@@ -56,9 +56,9 @@ const Profile = () => {
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">Il mio profilo</h2>
+                <h2 className="text-3xl font-bold tracking-tight">{t('contractor.profile.title')}</h2>
                 <Button variant="outline" onClick={() => setShowPreview(true)}>
-                    <Eye className="h-4 w-4 mr-2" /> Visualizza il profilo pubblico
+                    <Eye className="h-4 w-4 mr-2" /> {t('contractor.profile.viewPublic')}
                 </Button>
             </div>
 
@@ -86,7 +86,7 @@ const Profile = () => {
                                 </div>
                                 <div className="mb-2">
                                     <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                                        <CheckCircle className="h-3 w-3 mr-1" /> Impresa Verificata
+                                        <CheckCircle className="h-3 w-3 mr-1" /> {t('contractor.profile.verified')}
                                     </Badge>
                                 </div>
                             </div>
@@ -110,17 +110,17 @@ const Profile = () => {
 
                                 <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-100">
                                     <div>
-                                        <p className="text-sm text-gray-500">Aree di competenza</p>
+                                        <p className="text-sm text-gray-500">{t('contractor.profile.expertise')}</p>
                                         <p className="font-medium">{profile.expertise}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">Membro dal</p>
+                                        <p className="text-sm text-gray-500">{t('contractor.profile.memberSince')}</p>
                                         <p className="font-medium">Gen 2024</p>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h3 className="font-semibold mb-2">Su di me</h3>
+                                    <h3 className="font-semibold mb-2">{t('contractor.profile.about')}</h3>
                                     <p className="text-gray-600 leading-relaxed">{profile.description}</p>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ const Profile = () => {
                             </div>
                             {isEditing && (
                                 <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                    <span className="text-xs">Modifica</span>
+                                    <span className="text-xs">{t('contractor.profile.edit')}</span>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                                 </label>
                             )}
@@ -168,20 +168,20 @@ const Profile = () => {
                 {/* Details Form */}
                 <Card className="md:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Dettagli</CardTitle>
+                        <CardTitle>{t('contractor.profile.details')}</CardTitle>
                         <Button
                             variant={isEditing ? "default" : "outline"}
                             onClick={isEditing ? handleSave : () => setIsEditing(true)}
                         >
-                            {isEditing ? 'Salva Modifiche' : 'Modifica Profilo'}
+                            {isEditing ? t('contractor.profile.save') : t('contractor.profile.edit')}
                         </Button>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <h3 className="font-bold text-lg">Campi obbligatori</h3>
+                        <h3 className="font-bold text-lg">{t('contractor.profile.mandatory')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">Denominazione impresa</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.companyName')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.companyName}
@@ -189,29 +189,29 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">P.IVA</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.vat')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.vatNumber}
-                                    placeholder="Codice 11 numeri"
+                                    placeholder={t('contractor.profile.vat_ph')}
                                     onChange={(e) => setProfile({ ...profile, vatNumber: e.target.value })}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold">Sede</label>
+                            <label className="text-sm font-bold">{t('contractor.profile.headquarters')}</label>
                             <Input
                                 disabled={!isEditing}
                                 value={profile.address}
-                                placeholder="Via, piazza..."
+                                placeholder={t('contractor.profile.address_ph')}
                                 onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">città</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.city')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.city}
@@ -219,7 +219,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">provincia</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.province')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.province}
@@ -230,7 +230,7 @@ const Profile = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">Email</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.email')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.email}
@@ -238,7 +238,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">telefono</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.phone')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.phone}
@@ -249,27 +249,27 @@ const Profile = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">Legale Rappresentante</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.legalRep')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.name}
-                                    placeholder="Nome e cognome"
+                                    placeholder={t('contractor.profile.legalRep_ph')}
                                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold">CODICE FISCALE</label>
+                                <label className="text-sm font-bold">{t('contractor.profile.fiscalCode')}</label>
                                 <Input
                                     disabled={!isEditing}
                                     value={profile.fiscalCode}
-                                    placeholder="codice alfanumerico di 16 cifre"
+                                    placeholder={t('contractor.profile.fiscalCode_ph')}
                                     onChange={(e) => setProfile({ ...profile, fiscalCode: e.target.value })}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2 pt-4 border-t border-gray-100">
-                            <label className="text-sm font-bold block">Inserire Visura camerale (PDF obbligatorio) <span className="text-red-500">*</span></label>
+                            <label className="text-sm font-bold block">{t('contractor.profile.uploadVisura')}</label>
                             {isEditing ? (
                                 <input type="file" accept=".pdf" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onChange={(e) => handleFileChange(e, 'visuraFile')} />
                             ) : (
@@ -280,11 +280,11 @@ const Profile = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold block">Inserire altro file PDF per eventuale descrizione/presentazione della ditta (non obbligatorio)</label>
+                            <label className="text-sm font-bold block">{t('contractor.profile.uploadPresentation')}</label>
                             {isEditing ? (
                                 <input type="file" accept=".pdf" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onChange={(e) => handleFileChange(e, 'presentationFile')} />
                             ) : (
-                                <p className="text-sm text-gray-400 italic">Nessun file caricato</p>
+                                <p className="text-sm text-gray-400 italic">{t('contractor.profile.noFile')}</p>
                             )}
                         </div>
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Search, Users, Building, AlertTriangle, CheckCircle, XCircle, MoreVertical } from 'lucide-react';
+import { Search, Users, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -14,6 +15,7 @@ import {
 } from "../../components/ui/Table";
 
 const UserManagement = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('clients'); // 'clients' or 'contractors'
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -52,15 +54,15 @@ const UserManagement = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">User Management</h2>
-                <p className="text-gray-500">Oversee and manage platform access for Clients and Contractors.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.users.title')}</h2>
+                <p className="text-gray-500">{t('owner.users.subtitle')}</p>
             </div>
 
             {/* Stats Overview */}
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('owner.users.totalUsers')}</CardTitle>
                         <Users className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
@@ -69,7 +71,7 @@ const UserManagement = () => {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Pending Verifications</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('owner.users.pendingVerifications')}</CardTitle>
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
@@ -78,7 +80,7 @@ const UserManagement = () => {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Suspended Users</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('owner.users.suspendedUsers')}</CardTitle>
                         <XCircle className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
@@ -98,20 +100,20 @@ const UserManagement = () => {
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'clients' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
                                     }`}
                             >
-                                Clients
+                                {t('owner.users.clients')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('contractors')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'contractors' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
                                     }`}
                             >
-                                Contractors
+                                {t('owner.users.contractors')}
                             </button>
                         </div>
                         <div className="relative w-full md:w-64">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Search users..."
+                                placeholder={t('owner.users.searchPlaceholder')}
                                 className="pl-9"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -123,12 +125,12 @@ const UserManagement = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>{activeTab === 'clients' ? 'Type' : 'Category'}</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>{activeTab === 'clients' ? 'Active Tenders' : 'Credits'}</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead>{t('owner.users.name')}</TableHead>
+                                <TableHead>{activeTab === 'clients' ? t('owner.users.type') : t('owner.users.category')}</TableHead>
+                                <TableHead>{t('owner.users.email')}</TableHead>
+                                <TableHead>{t('owner.users.status')}</TableHead>
+                                <TableHead>{activeTab === 'clients' ? t('owner.users.activeTenders') : t('owner.users.credits')}</TableHead>
+                                <TableHead className="text-right">{t('owner.users.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -153,16 +155,16 @@ const UserManagement = () => {
                                     <TableCell className="text-right space-x-2">
                                         {activeTab === 'contractors' && !user.verified && (
                                             <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'contractors', 'verify')}>
-                                                <CheckCircle className="h-4 w-4 mr-1" /> Verify
+                                                <CheckCircle className="h-4 w-4 mr-1" /> {t('owner.users.verify')}
                                             </Button>
                                         )}
                                         {user.status !== 'Suspended' ? (
                                             <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleAction(user.id, activeTab, 'block')}>
-                                                Block
+                                                {t('owner.users.block')}
                                             </Button>
                                         ) : (
                                             <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, activeTab, 'activate')}>
-                                                Activate
+                                                {t('owner.users.activate')}
                                             </Button>
                                         )}
                                     </TableCell>

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Label } from '../../components/ui/Label';
-import { Save, RefreshCw, Settings, ToggleLeft, ToggleRight, Info } from 'lucide-react';
-import { Switch } from '../../components/ui/Switch'; // Assuming a switch component or using button toggle
+import { Save, RefreshCw, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Switch } from '../../components/ui/Switch';
 
 const Configuration = () => {
+    const { t } = useTranslation();
+
     // Mock Configuration State
     const [config, setConfig] = useState({
         creditPriceBasic: 50,
@@ -15,7 +18,6 @@ const Configuration = () => {
         successFeePercent: 3.0,
         tenderDurationDays: 15,
         minBudgetValues: [0, 50000, 100000, 250000],
-
         autoApproveClients: false,
     });
 
@@ -36,8 +38,8 @@ const Configuration = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Platform Configuration</h2>
-                <p className="text-gray-500">Manage global system settings, pricing, and operational parameters.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.configuration.title')}</h2>
+                <p className="text-gray-500">{t('owner.configuration.subtitle')}</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -45,14 +47,14 @@ const Configuration = () => {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-blue-600" /> Financial Parameters
+                            <Settings className="h-5 w-5 text-blue-600" /> {t('owner.configuration.financial')}
                         </CardTitle>
-                        <CardDescription>Set pricing for credits and fees.</CardDescription>
+                        <CardDescription>{t('owner.configuration.financialDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="credit-basic">Basic Credit Pack (€)</Label>
+                                <Label htmlFor="credit-basic">{t('owner.configuration.basicCredit')}</Label>
                                 <Input
                                     id="credit-basic"
                                     type="number"
@@ -61,7 +63,7 @@ const Configuration = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="credit-pro">Pro Credit Pack (€)</Label>
+                                <Label htmlFor="credit-pro">{t('owner.configuration.proCredit')}</Label>
                                 <Input
                                     id="credit-pro"
                                     type="number"
@@ -71,7 +73,7 @@ const Configuration = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="success-fee">Success Fee Percentage (%)</Label>
+                            <Label htmlFor="success-fee">{t('owner.configuration.successFee')}</Label>
                             <div className="relative">
                                 <Input
                                     id="success-fee"
@@ -83,7 +85,7 @@ const Configuration = () => {
                                 />
                                 <span className="absolute right-3 top-2.5 text-gray-500">%</span>
                             </div>
-                            <p className="text-xs text-gray-500">Applies to awarded contract value.</p>
+                            <p className="text-xs text-gray-500">{t('owner.configuration.successFeeDesc')}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -92,13 +94,13 @@ const Configuration = () => {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <RefreshCw className="h-5 w-5 text-green-600" /> Operational Defaults
+                            <RefreshCw className="h-5 w-5 text-green-600" /> {t('owner.configuration.operational')}
                         </CardTitle>
-                        <CardDescription>Set default behaviors for tenders and users.</CardDescription>
+                        <CardDescription>{t('owner.configuration.operationalDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="tender-duration">Default Tender Duration (Days)</Label>
+                            <Label htmlFor="tender-duration">{t('owner.configuration.tenderDuration')}</Label>
                             <Input
                                 id="tender-duration"
                                 type="number"
@@ -107,12 +109,32 @@ const Configuration = () => {
                             />
                         </div>
 
-
+                        <div className="pt-4 pb-2">
+                            <h3 className="text-sm font-medium text-gray-900 mb-3">{t('owner.configuration.aiModules')}</h3>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between p-2 border rounded bg-white">
+                                    <Label className="text-sm cursor-pointer" htmlFor="ai-boq">{t('owner.configuration.autoBoq')}</Label>
+                                    <Switch
+                                        id="ai-boq"
+                                        checked={true}
+                                        onCheckedChange={() => { }}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded bg-white">
+                                    <Label className="text-sm cursor-pointer" htmlFor="ai-match">{t('owner.configuration.smartMatching')}</Label>
+                                    <Switch
+                                        id="ai-match"
+                                        checked={true}
+                                        onCheckedChange={() => { }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
                             <div className="space-y-0.5">
-                                <Label className="text-base">Auto-Approve Clients</Label>
-                                <p className="text-xs text-gray-500">Skip manual verification for new clients</p>
+                                <Label className="text-base">{t('owner.configuration.autoApprove')}</Label>
+                                <p className="text-xs text-gray-500">{t('owner.configuration.autoApproveDesc')}</p>
                             </div>
                             <button onClick={() => handleChange('autoApproveClients', !config.autoApproveClients)}>
                                 {config.autoApproveClients ? (
@@ -130,11 +152,11 @@ const Configuration = () => {
                 <Button size="lg" onClick={handleSave} disabled={isSaving} className="min-w-[150px]">
                     {isSaving ? (
                         <>
-                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> {t('owner.configuration.saving')}
                         </>
                     ) : (
                         <>
-                            <Save className="mr-2 h-4 w-4" /> Save Configuration
+                            <Save className="mr-2 h-4 w-4" /> {t('owner.configuration.save')}
                         </>
                     )}
                 </Button>

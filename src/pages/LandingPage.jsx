@@ -86,21 +86,21 @@ const LandingPage = () => {
     const testimonials = [
         {
             id: 1,
-            text: "Appalto Smart transformed how we manage our construction projects. The tender process is 3x faster now.",
+            text: t('landing.testimonials.t1'),
             author: "Marco Rossi",
             role: "Property Developer",
             company: "Rossi Estates"
         },
         {
             id: 2,
-            text: "Finally, a platform that respects contractors. Clear requirements, guaranteed payments, and easy communication.",
+            text: t('landing.testimonials.t2'),
             author: "Giuseppe Verdi",
             role: "General Contractor",
             company: "Verdi Costruzioni"
         },
         {
             id: 3,
-            text: "The financial oversight tools are incredible. I know exactly where every cent is going in real-time.",
+            text: t('landing.testimonials.t3'),
             author: "Elena Bianchi",
             role: "Project Manager",
             company: "Milano Towers"
@@ -125,11 +125,11 @@ const LandingPage = () => {
                     <div className="hidden md:flex items-center gap-4">
                         <LanguageSwitcher />
                         <Link to="/login" className="text-gray-300 hover:text-white font-medium transition-colors">
-                            {t('nav_signin')}
+                            {t('landing.nav.signIn')}
                         </Link>
                         <Link to="/login">
                             <Button className="relative overflow-hidden bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full font-semibold shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all group">
-                                <span className="relative z-10">{t('get_started')}</span>
+                                <span className="relative z-10">{t('landing.nav.getStarted')}</span>
                                 <div className="absolute inset-0 h-full w-full scale-0 rounded-full transition-all duration-300 group-hover:scale-100 group-hover:bg-blue-500"></div>
                             </Button>
                         </Link>
@@ -153,10 +153,10 @@ const LandingPage = () => {
                         >
                             <div className="flex flex-col gap-4">
                                 <Link to="/login" className="w-full">
-                                    <Button variant="outline" className="w-full justify-center border-white/20 text-white hover:bg-white/10">{t('nav_signin')}</Button>
+                                    <Button variant="outline" className="w-full justify-center border-white/20 text-white hover:bg-white/10">{t('landing.nav.signIn')}</Button>
                                 </Link>
                                 <Link to="/register" className="w-full">
-                                    <Button className="w-full justify-center bg-blue-600 hover:bg-blue-500 text-white shadow-lg">{t('get_started')}</Button>
+                                    <Button className="w-full justify-center bg-blue-600 hover:bg-blue-500 text-white shadow-lg">{t('landing.nav.getStarted')}</Button>
                                 </Link>
                             </div>
                         </motion.div>
@@ -212,7 +212,7 @@ const LandingPage = () => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                             </span>
-                            {t('slogan')}
+                            {t('landing.hero.slogan')}
                         </motion.div>
 
                         <motion.h1
@@ -221,14 +221,14 @@ const LandingPage = () => {
                             transition={{ delay: 0.4, duration: 0.8 }}
                             className="text-6xl md:text-8xl font-extrabold tracking-tight text-white leading-[1.1]"
                         >
-                            {t('hero_title_1')}<br />
+                            {t('landing.hero.title1')}<br />
                             <motion.span
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 1, duration: 1 }}
                                 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-teal-400 bg-300% animate-gradient"
                             >
-                                {t('hero_title_2')}
+                                {t('landing.hero.title2')}
                             </motion.span>
                         </motion.h1>
 
@@ -238,7 +238,7 @@ const LandingPage = () => {
                             transition={{ delay: 0.6 }}
                             className="text-xl md:text-2xl text-gray-400 max-w-2xl leading-relaxed"
                         >
-                            {t('hero_desc')}
+                            {t('landing.hero.desc')}
                         </motion.p>
 
                         <motion.div
@@ -251,13 +251,13 @@ const LandingPage = () => {
                                 <Button size="lg" className="group relative h-16 px-10 text-xl overflow-hidden bg-blue-600 text-white rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                                     <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
                                     <span className="relative flex items-center gap-2">
-                                        {t('start_project')} <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                                        {t('landing.hero.startProject')} <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
                                     </span>
                                 </Button>
                             </Link>
                             <Link to="/login">
                                 <Button variant="outline" size="lg" className="h-16 px-10 text-xl rounded-full border-2 border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all">
-                                    {t('contractor_cta')}
+                                    {t('landing.hero.joinContractor')}
                                 </Button>
                             </Link>
                         </motion.div>
@@ -275,10 +275,10 @@ const LandingPage = () => {
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
                         {[
-                            { value: "€50M+", label: "Project Value Managed" },
-                            { value: "1.2k+", label: "Active Contracts" },
-                            { value: "98%", label: "Client Satisfaction" },
-                            { value: "24h", label: "Avg. Tender Response" }
+                            { value: "€50M+", label: t('landing.stats.projectValue') },
+                            { value: "1.2k+", label: t('landing.stats.activeContracts') },
+                            { value: "98%", label: t('landing.stats.clientSatisfaction') },
+                            { value: "24h", label: t('landing.stats.response') }
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
@@ -314,25 +314,25 @@ const LandingPage = () => {
                                 viewport={{ once: true }}
                             >
                                 <div className="inline-flex items-center gap-2 text-teal-400 font-semibold tracking-wide uppercase text-sm mb-4">
-                                    <TrendingUp className="h-4 w-4" /> Market Insights
+                                    <TrendingUp className="h-4 w-4" /> {t('landing.market.insights')}
                                 </div>
                                 <h2 className="text-4xl font-bold text-white mb-4">
-                                    Real-Time Visualizations
+                                    {t('landing.market.title')}
                                 </h2>
                                 <p className="text-lg text-gray-400 leading-relaxed mb-6">
-                                    Gain unprecedented visibility into market trends. Track tender volumes, acceptance rates, and pricing fluctuations in your region instantly.
+                                    {t('landing.market.desc')}
                                 </p>
                                 <div className="grid grid-cols-2 gap-4">
                                     <SpotlightCard>
                                         <div className="p-6">
                                             <div className="text-3xl font-bold text-white">+24%</div>
-                                            <div className="text-sm text-gray-400">Tender Volume (YoY)</div>
+                                            <div className="text-sm text-gray-400">{t('landing.market.volume')}</div>
                                         </div>
                                     </SpotlightCard>
                                     <SpotlightCard>
                                         <div className="p-6">
                                             <div className="text-3xl font-bold text-white">-15%</div>
-                                            <div className="text-sm text-gray-400">Avg. Project Cost</div>
+                                            <div className="text-sm text-gray-400">{t('landing.market.cost')}</div>
                                         </div>
                                     </SpotlightCard>
                                 </div>
@@ -340,7 +340,7 @@ const LandingPage = () => {
                         </div>
 
                         <div className="md:w-1/2 w-full h-[400px] bg-[#111827] p-6 rounded-2xl shadow-xl border border-white/10 ring-1 ring-white/5">
-                            <h3 className="font-semibold text-white mb-6">Construction Tender Activity 2025</h3>
+                            <h3 className="font-semibold text-white mb-6">{t('landing.market.chartTitle')}</h3>
                             <ResponsiveContainer width="100%" height="85%">
                                 <AreaChart data={chartData}>
                                     <defs>
@@ -398,21 +398,21 @@ const LandingPage = () => {
                             className="md:w-1/2 space-y-8"
                         >
                             <div className="inline-flex items-center gap-2 text-blue-400 font-semibold tracking-wide uppercase text-sm">
-                                <Briefcase className="h-4 w-4" /> For Contractors
+                                <Briefcase className="h-4 w-4" /> {t('landing.features.forContractors')}
                             </div>
                             <h2 className="text-4xl md:text-5xl font-bold text-white">
-                                Win More Jobs,<br />Less Paperwork.
+                                {t('landing.features.title')}
                             </h2>
                             <p className="text-lg text-gray-400 leading-relaxed">
-                                Stop chasing leads. Appalto Smart brings high-quality, fully funded projects directly to you. Submit bids, manage compliance documents, and get paid faster.
+                                {t('landing.features.desc')}
                             </p>
 
                             <ul className="space-y-4">
                                 {[
-                                    "Direct access to verified property owners",
-                                    "Automated compliance & document management",
-                                    "Guaranteed payments via escrow integration",
-                                    "Mobile-friendly dashboard for on-site management"
+                                    t('landing.features.list.access'),
+                                    t('landing.features.list.compliance'),
+                                    t('landing.features.list.payments'),
+                                    t('landing.features.list.dashboard')
                                 ].map((item, i) => (
                                     <motion.li
                                         key={i}
@@ -431,7 +431,7 @@ const LandingPage = () => {
                             </ul>
 
                             <Link to="/register">
-                                <Button variant="outline" className="mt-4 hover:scale-105 transition-transform border-blue-400/30 text-blue-400 hover:bg-blue-400/10">Join as Contractor</Button>
+                                <Button variant="outline" className="mt-4 hover:scale-105 transition-transform border-blue-400/30 text-blue-400 hover:bg-blue-400/10">{t('landing.features.cta')}</Button>
                             </Link>
                         </motion.div>
 
@@ -474,15 +474,15 @@ const LandingPage = () => {
             <section className="py-24 bg-[#0f172a] relative border-t border-white/5">
                 <div className="container mx-auto px-4 md:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How Appalto Smart Works</h2>
-                        <p className="text-lg text-gray-400">Three simple steps to streamline your construction projects.</p>
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.how.title')}</h2>
+                        <p className="text-lg text-gray-400">{t('landing.how.subtitle')}</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 text-center max-w-6xl mx-auto">
                         {[
-                            { icon: FileText, title: "1. Post a Tender", desc: "Define your project requirements, budget, and timeline using our AI-assisted tools.", color: "text-blue-400", bg: "bg-blue-900/20" },
-                            { icon: Users, title: "2. Compare Bids", desc: "Receive proposals from verified contractors. Compare costs, expertise, and ratings side-by-side.", color: "text-indigo-400", bg: "bg-indigo-900/20" },
-                            { icon: LayoutDashboard, title: "3. Manage & Build", desc: "Track progress, approve milestones, and handle payments securely through the platform.", color: "text-teal-400", bg: "bg-teal-900/20" }
+                            { icon: FileText, title: t('landing.how.step1.title'), desc: t('landing.how.step1.desc'), color: "text-blue-400", bg: "bg-blue-900/20" },
+                            { icon: Users, title: t('landing.how.step2.title'), desc: t('landing.how.step2.desc'), color: "text-indigo-400", bg: "bg-indigo-900/20" },
+                            { icon: LayoutDashboard, title: t('landing.how.step3.title'), desc: t('landing.how.step3.desc'), color: "text-teal-400", bg: "bg-teal-900/20" }
                         ].map((step, i) => (
                             <motion.div
                                 key={i}
@@ -509,7 +509,7 @@ const LandingPage = () => {
             {/* Testimonials */}
             <section className="py-24 bg-[#0B1120] border-t border-white/5">
                 <div className="container mx-auto px-4 md:px-8">
-                    <h2 className="text-3xl font-bold text-center text-white mb-16">Trusted by Industry Leaders</h2>
+                    <h2 className="text-3xl font-bold text-center text-white mb-16">{t('landing.testimonials.title')}</h2>
                     <div className="grid md:grid-cols-3 gap-8">
                         {testimonials.map((t, i) => (
                             <motion.div
@@ -559,11 +559,11 @@ const LandingPage = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-4xl md:text-6xl font-bold mb-6">Ready to transform your business?</h2>
-                        <p className="text-blue-100 text-xl mb-10 max-w-2xl mx-auto">Join thousands of property owners and contractors building the future with Appalto Smart.</p>
+                        <h2 className="text-4xl md:text-6xl font-bold mb-6">{t('landing.cta.title')}</h2>
+                        <p className="text-blue-100 text-xl mb-10 max-w-2xl mx-auto">{t('landing.cta.subtitle')}</p>
                         <Link to="/register">
                             <Button size="lg" className="group relative bg-white text-blue-600 hover:bg-gray-50 h-16 px-12 text-xl rounded-full font-bold shadow-2xl hover:scale-105 transition-all overflow-hidden">
-                                <span className="relative z-10">Get Started Now</span>
+                                <span className="relative z-10">{t('landing.cta.button')}</span>
                                 <div className="absolute inset-0 w-full h-full bg-blue-50/50 scale-0 rounded-full transition-transform duration-300 group-hover:scale-150 origin-center"></div>
                             </Button>
                         </Link>
@@ -580,29 +580,29 @@ const LandingPage = () => {
                                 <img src="/images/landing/logo.png" alt="Appalto Smart" className="h-8 w-auto" />
                                 <span className="font-bold text-xl">Appalto Smart</span>
                             </div>
-                            <p className="text-sm leading-relaxed">The leading platform for construction tenders and project management.</p>
+                            <p className="text-sm leading-relaxed">{t('landing.footer.desc')}</p>
                         </div>
                         <div>
-                            <h4 className="text-white font-bold mb-4">Platform</h4>
+                            <h4 className="text-white font-bold mb-4">{t('landing.footer.platform')}</h4>
                             <ul className="space-y-2 text-sm">
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">For Owners</Link></li>
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">For Contractors</Link></li>
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">Pricing</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.owners')}</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.contractors')}</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.pricing')}</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-white font-bold mb-4">Company</h4>
+                            <h4 className="text-white font-bold mb-4">{t('landing.footer.company')}</h4>
                             <ul className="space-y-2 text-sm">
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">About Us</Link></li>
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">Careers</Link></li>
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">Contact</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.about')}</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.careers')}</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.contact')}</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-white font-bold mb-4">Legal</h4>
+                            <h4 className="text-white font-bold mb-4">{t('landing.footer.legal')}</h4>
                             <ul className="space-y-2 text-sm">
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
-                                <li><Link to="#" className="hover:text-blue-400 transition-colors">Terms of Service</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.privacy')}</Link></li>
+                                <li><Link to="#" className="hover:text-blue-400 transition-colors">{t('landing.footer.terms')}</Link></li>
                             </ul>
                         </div>
                     </div>

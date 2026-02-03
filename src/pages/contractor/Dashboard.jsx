@@ -12,22 +12,22 @@ const Dashboard = () => {
 
     useEffect(() => {
         const hour = new Date().getHours();
-        if (hour < 12) setGreeting('Good Morning');
-        else if (hour < 18) setGreeting('Good Afternoon');
-        else setGreeting('Good Evening');
-    }, []);
+        if (hour < 12) setGreeting(t('contractor.dashboard.goodMorning'));
+        else if (hour < 18) setGreeting(t('contractor.dashboard.goodAfternoon'));
+        else setGreeting(t('contractor.dashboard.goodEvening'));
+    }, [t]);
 
     const stats = [
-        { title: "Total Tenders", value: "12", icon: FileText, color: "text-blue-600" },
-        { title: "Active Tenders", value: "3", icon: Clock, color: "text-blue-600" },
-        { title: "Bids Submitted", value: "5", icon: CheckCircle, color: "text-green-600" },
-        { title: "Awarded / Lost", value: "2 / 2", icon: Award, color: "text-gray-600" },
+        { title: t('contractor.dashboard.totalTenders'), value: "12", icon: FileText, color: "text-blue-600" },
+        { title: t('contractor.dashboard.activeTenders'), value: "3", icon: Clock, color: "text-blue-600" },
+        { title: t('contractor.dashboard.bidsSubmitted'), value: "5", icon: CheckCircle, color: "text-green-600" },
+        { title: t('contractor.dashboard.awardedLost'), value: "2 / 2", icon: Award, color: "text-gray-600" },
     ];
 
     const pieData = [
-        { name: 'Won', value: 2, color: '#16a34a' },
-        { name: 'Pending', value: 1, color: '#eab308' }, // Improved yellow
-        { name: 'Not Selected', value: 2, color: '#ef4444' }, // Improved red
+        { name: t('contractor.dashboard.won'), value: 2, color: '#16a34a' },
+        { name: t('contractor.dashboard.pending'), value: 1, color: '#eab308' },
+        { name: t('contractor.dashboard.notSelected'), value: 2, color: '#ef4444' },
     ];
 
     const notifications = [
@@ -55,7 +55,7 @@ const Dashboard = () => {
         <div className="space-y-6">
             <div className="flex flex-col gap-1">
                 <h2 className="text-3xl font-bold tracking-tight">{greeting}, Contractor!</h2>
-                <p className="text-gray-500">Welcome to your dashboard.</p>
+                <p className="text-gray-500">{t('contractor.dashboard.welcome')}</p>
             </div>
 
             {/* Stats Cards */}
@@ -80,7 +80,7 @@ const Dashboard = () => {
                 {/* Deadline Calendar */}
                 <Card className="h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle>Deadline Calendar</CardTitle>
+                        <CardTitle>{t('contractor.dashboard.deadlineCalendar')}</CardTitle>
                         <Calendar className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
@@ -108,7 +108,7 @@ const Dashboard = () => {
                                 })}
                             </div>
                             <div className="pt-4 space-y-2">
-                                <h4 className="text-sm font-medium text-gray-700">Upcoming Deadlines</h4>
+                                <h4 className="text-sm font-medium text-gray-700">{t('contractor.dashboard.upcomingDeadlines')}</h4>
                                 <div className="flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors">
                                     <div className="bg-red-100 text-red-600 p-2 rounded-lg">
                                         <span className="text-xs font-bold block">FEB</span>
@@ -137,7 +137,7 @@ const Dashboard = () => {
                 {/* Pie Chart */}
                 <Card className="h-full">
                     <CardHeader>
-                        <CardTitle>Bids Analysis</CardTitle>
+                        <CardTitle>{t('contractor.dashboard.bidsAnalysis')}</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -174,7 +174,7 @@ const Dashboard = () => {
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <Bell className="h-5 w-5 text-gray-500" />
-                        <CardTitle>Recent Activity</CardTitle>
+                        <CardTitle>{t('contractor.dashboard.recentActivity')}</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent>

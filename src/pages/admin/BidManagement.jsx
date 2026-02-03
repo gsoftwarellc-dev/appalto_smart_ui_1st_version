@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -9,6 +10,7 @@ import { Search, FileCheck, ChevronRight, ArrowLeft, Download, Eye } from 'lucid
 
 const BidManagement = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProject, setSelectedProject] = useState(null);
 
@@ -66,15 +68,15 @@ const BidManagement = () => {
         return (
             <div className="space-y-6">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Bid Management</h2>
-                    <p className="text-gray-500">Select a project to view and manage bids</p>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('admin.bidManagement.title')}</h2>
+                    <p className="text-gray-500">{t('admin.bidManagement.subtitle')}</p>
                 </div>
 
                 {/* Search */}
                 <div className="relative max-w-md">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search projects..."
+                        placeholder={t('admin.bidManagement.searchPlaceholder')}
                         className="pl-9"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -105,15 +107,15 @@ const BidManagement = () => {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <FileCheck className="h-4 w-4 text-blue-600" />
-                                            <span className="text-sm font-medium text-gray-600">Total Bids:</span>
+                                            <span className="text-sm font-medium text-gray-600">{t('admin.bidManagement.totalBids')}:</span>
                                         </div>
                                         <span className="text-2xl font-bold text-blue-600">{project.bidCount}</span>
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-2">Deadline: {project.deadline}</p>
+                                    <p className="text-xs text-gray-400 mt-2">{t('tender.details.deadline')}: {project.deadline}</p>
                                 </div>
 
                                 <Button variant="outline" className="w-full mt-4" size="sm">
-                                    View Bids
+                                    {t('tender.boq.viewBids')}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -122,8 +124,8 @@ const BidManagement = () => {
 
                 {filteredProjects.length === 0 && (
                     <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <h3 className="text-lg font-medium text-gray-900">No projects found</h3>
-                        <p className="text-gray-500">Try adjusting your search criteria.</p>
+                        <h3 className="text-lg font-medium text-gray-900">{t('admin.bidManagement.noProjects')}</h3>
+                        <p className="text-gray-500">{t('admin.bidManagement.noProjectsDesc')}</p>
                     </div>
                 )}
             </div>
@@ -141,13 +143,13 @@ const BidManagement = () => {
                     size="sm"
                     onClick={() => setSelectedProject(null)}
                 >
-                    <ArrowLeft className="h-4 w-4 mr-1" /> Back to Projects
+                    <ArrowLeft className="h-4 w-4 mr-1" /> {t('admin.bidManagement.backToProjects')}
                 </Button>
             </div>
 
             <div>
                 <h2 className="text-3xl font-bold tracking-tight">{selectedProject.name}</h2>
-                <p className="text-gray-500">All Bids ({projectBids.length})</p>
+                <p className="text-gray-500">{t('admin.bidManagement.allBids')} ({projectBids.length})</p>
             </div>
 
             {/* Bids Table */}
@@ -156,12 +158,12 @@ const BidManagement = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Contractor</TableHead>
-                                <TableHead>Tender</TableHead>
-                                <TableHead>Bid Amount</TableHead>
-                                <TableHead>Submission Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead>{t('admin.bidManagement.table.contractor')}</TableHead>
+                                <TableHead>{t('admin.bidManagement.table.tender')}</TableHead>
+                                <TableHead>{t('admin.bidManagement.table.amount')}</TableHead>
+                                <TableHead>{t('admin.bidManagement.table.date')}</TableHead>
+                                <TableHead>{t('admin.bidManagement.table.status')}</TableHead>
+                                <TableHead className="text-right">{t('admin.bidManagement.table.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -179,13 +181,13 @@ const BidManagement = () => {
                                     <TableCell className="text-right">
                                         <div className="flex gap-2 justify-end">
                                             <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
-                                                ✓ Approve
+                                                ✓ {t('admin.bidManagement.table.approve')}
                                             </Button>
                                             <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                                                ✕ Reject
+                                                ✕ {t('admin.bidManagement.table.reject')}
                                             </Button>
                                             <Button variant="outline" size="sm">
-                                                <Eye className="h-3 w-3 mr-1" /> View
+                                                <Eye className="h-3 w-3 mr-1" /> {t('admin.bidManagement.table.view')}
                                             </Button>
                                             <Button variant="outline" size="sm">
                                                 <Download className="h-3 w-3" />
@@ -199,8 +201,8 @@ const BidManagement = () => {
 
                     {projectBids.length === 0 && (
                         <div className="text-center py-12">
-                            <h3 className="text-lg font-medium text-gray-900">No bids yet</h3>
-                            <p className="text-gray-500">This project hasn't received any bids.</p>
+                            <h3 className="text-lg font-medium text-gray-900">{t('admin.bidManagement.noBids')}</h3>
+                            <p className="text-gray-500">{t('admin.bidManagement.noBidsDesc')}</p>
                         </div>
                     )}
                 </CardContent>

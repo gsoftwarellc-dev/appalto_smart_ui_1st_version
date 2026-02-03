@@ -25,24 +25,24 @@ const Sidebar = () => {
     const { t } = useTranslation();
 
     const adminLinks = [
-        { to: '/admin', icon: LayoutDashboard, label: t('common.dashboard'), end: true },
-        { to: '/admin/create-tender', icon: PlusCircle, label: t('admin.createTender') },
-        { to: '/admin/tenders', icon: List, label: t('admin.tendersList') },
-        { to: '/admin/bids', icon: FileCheck, label: 'Bid Management' },
-        { to: '/admin/contractors', icon: Users, label: 'Contractors' },
-        { to: '/admin/documents', icon: FolderOpen, label: 'Documents' },
-        { to: '/admin/notifications', icon: Bell, label: 'Notifications' },
-        { to: '/admin/profile', icon: UserCircle, label: 'My Profile' },
+        { to: '/admin', icon: LayoutDashboard, label: t('sidebar.dashboard'), end: true },
+        { to: '/admin/create-tender', icon: PlusCircle, label: t('sidebar.createTender') },
+        { to: '/admin/tenders', icon: List, label: t('sidebar.tendersList') },
+        { to: '/admin/bids', icon: FileCheck, label: t('sidebar.bidManagement') },
+        // { to: '/admin/contractors', icon: Users, label: 'Contractors' }, // Removed: Contractors visible only in offers
+        { to: '/admin/documents', icon: FolderOpen, label: t('sidebar.documents') },
+        { to: '/admin/notifications', icon: Bell, label: t('sidebar.notifications') },
+        { to: '/admin/profile', icon: UserCircle, label: t('sidebar.myProfile') },
     ];
 
     const contractorLinks = [
-        { to: '/contractor', icon: LayoutDashboard, label: t('common.dashboard'), end: true },
-        { to: '/contractor/tenders', icon: Briefcase, label: t('contractor.activeTenders') },
-        { to: '/contractor/bids', icon: FileText, label: t('contractor.myBids') },
-        { to: '/contractor/documents', icon: FolderOpen, label: 'Document Center' },
-        { to: '/contractor/notifications', icon: Bell, label: 'Notifications' },
-        { to: '/contractor/billing', icon: CreditCard, label: 'Billing' },
-        { to: '/contractor/profile', icon: UserCircle, label: 'My Profile' },
+        { to: '/contractor', icon: LayoutDashboard, label: t('sidebar.dashboard'), end: true },
+        { to: '/contractor/tenders', icon: Briefcase, label: t('sidebar.activeTenders') },
+        { to: '/contractor/bids', icon: FileText, label: t('sidebar.myBids') },
+        { to: '/contractor/documents', icon: FolderOpen, label: t('sidebar.documentCenter') },
+        { to: '/contractor/notifications', icon: Bell, label: t('sidebar.notifications') },
+        { to: '/contractor/billing', icon: CreditCard, label: t('sidebar.billing') },
+        { to: '/contractor/profile', icon: UserCircle, label: t('sidebar.myProfile') },
     ];
 
     const links = user?.role === 'admin' ? adminLinks : contractorLinks;
@@ -80,7 +80,7 @@ const Sidebar = () => {
                     className="flex w-full items-center px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
                     <LogOut className="mr-3 h-5 w-5" />
-                    {t('common.logout')}
+                    {t('sidebar.logout')}
                 </button>
                 <div className="mt-4 bg-gray-50 rounded-lg p-4">
                     <p className="text-xs text-gray-500 text-center">

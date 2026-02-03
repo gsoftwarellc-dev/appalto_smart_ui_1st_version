@@ -18,14 +18,13 @@ const CreateTender = () => {
 
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        title: '',
-        description: '',
+        clientName: '',
+        object: '',
         deadline: getDefaultDeadline(),
-        budget: '',
-        location: '',
+        estimatedAmount: '',
+        address: '',
         urgent: false,
-        status: 'Open',
-        jobType: '',
+        status: 'Open', // Default, hidden
     });
 
     const handleChange = (e) => {
@@ -74,102 +73,58 @@ const CreateTender = () => {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Tender Details</CardTitle>
+                    <CardTitle>{t('admin.create.title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Row 1: Denominazione/nome and Indirizzo */}
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Title
+                                <label className="block text-sm font-bold mb-2">
+                                    {t('admin.create.clientName')}
                                 </label>
                                 <Input
-                                    name="title"
-                                    value={formData.title}
+                                    name="clientName"
+                                    value={formData.clientName}
                                     onChange={handleChange}
-                                    placeholder="e.g., Roof Renovation"
+                                    placeholder={t('admin.create.clientNamePlaceholder')}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Location
+                                <label className="block text-sm font-bold mb-2">
+                                    {t('admin.create.address')}
                                 </label>
-                                <select
-                                    name="location"
-                                    value={formData.location}
+                                <Input
+                                    name="address"
+                                    value={formData.address}
                                     onChange={handleChange}
-                                    className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    placeholder={t('admin.create.addressPlaceholder')}
                                     required
-                                >
-                                    <option value="">Select location</option>
-                                    <option value="Rome">Rome</option>
-                                    <option value="Milan">Milan</option>
-                                    <option value="Florence">Florence</option>
-                                    <option value="Naples">Naples</option>
-                                    <option value="Turin">Turin</option>
-                                    <option value="Venice">Venice</option>
-                                </select>
+                                />
                             </div>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Job Type
-                                </label>
-                                <select
-                                    name="jobType"
-                                    value={formData.jobType}
-                                    onChange={handleChange}
-                                    className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                    required
-                                >
-                                    <option value="">Select job type</option>
-                                    <option value="Construction & Renovation">Construction & Renovation</option>
-                                    <option value="Electrical Works">Electrical Works</option>
-                                    <option value="Plumbing & HVAC">Plumbing & HVAC</option>
-                                    <option value="Painting & Decoration">Painting & Decoration</option>
-                                    <option value="Landscaping">Landscaping</option>
-                                    <option value="Maintenance">Maintenance</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Status
-                                </label>
-                                <select
-                                    name="status"
-                                    value={formData.status}
-                                    onChange={handleChange}
-                                    className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                >
-                                    <option value="Open">Open</option>
-                                    <option value="Review">Under Review</option>
-                                    <option value="Awarded">Awarded</option>
-                                    <option value="Closed">Closed</option>
-                                </select>
-                            </div>
-                        </div>
-
+                        {/* Oggetto */}
                         <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Description
+                            <label className="block text-sm font-bold mb-2">
+                                {t('admin.create.object')}
                             </label>
                             <textarea
-                                name="description"
-                                value={formData.description}
+                                name="object"
+                                value={formData.object}
                                 onChange={handleChange}
                                 className="flex min-h-[100px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                placeholder="Detailed description of works..."
+                                placeholder={t('admin.create.objectPlaceholder')}
                                 required
                             />
                         </div>
 
+                        {/* Row 3: Scadenza and Importo stimato */}
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium mb-2">
-                                    Deadline
+                                    {t('admin.create.deadline')}
                                 </label>
                                 <Input
                                     type="date"
@@ -179,24 +134,28 @@ const CreateTender = () => {
                                     disabled
                                     className="bg-gray-100 cursor-not-allowed"
                                 />
-                                <p className="text-xs text-blue-600 mt-1">Fixed duration: 15 days from today</p>
+                                <p className="text-xs text-blue-600 mt-1">{t('admin.create.fixedDuration')}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Budget (Optional)
+                                <label className="block text-sm font-bold mb-2">
+                                    {t('admin.create.estimatedAmount')}
                                 </label>
                                 <select
-                                    name="budget"
-                                    value={formData.budget}
+                                    name="estimatedAmount"
+                                    value={formData.estimatedAmount}
                                     onChange={handleChange}
                                     className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    required
                                 >
-                                    <option value="">Select range</option>
+                                    <option value="">{t('admin.create.selectRange')}</option>
                                     <option value="€0 – €50,000">€0 – €50,000</option>
                                     <option value="€50,000 – €100,000">€50,000 – €100,000</option>
                                     <option value="€100,000 – €250,000">€100,000 – €250,000</option>
                                     <option value="Top than €250,000">Top than €250,000</option>
                                 </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {t('admin.create.mandatoryNote')}
+                                </p>
                             </div>
                         </div>
 
@@ -210,13 +169,13 @@ const CreateTender = () => {
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                             <label htmlFor="urgent" className="text-sm font-medium">
-                                Mark as Urgent
+                                {t('admin.create.urgent')}
                             </label>
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Bill of Quantities (Computo Metrico)
+                                {t('admin.create.boq')}
                             </label>
 
                             {/* BoQ Input Mode Toggle */}
@@ -226,29 +185,29 @@ const CreateTender = () => {
                                     onClick={() => setBoqMode('file')}
                                     className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'file' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
                                 >
-                                    Upload PDF (AI Extract)
+                                    {t('admin.create.uploadPdf')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setBoqMode('manual')}
                                     className={`px-4 py-1.5 text-sm font-medium rounded transition-all ${boqMode === 'manual' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
                                 >
-                                    Manual Entry
+                                    {t('admin.create.manualEntry')}
                                 </button>
                             </div>
 
                             {boqMode === 'file' ? (
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
                                     <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                    <span className="text-sm text-gray-500">Click to upload PDF</span>
+                                    <span className="text-sm text-gray-500">{t('admin.create.clickUpload')}</span>
                                     <input type="file" className="hidden" accept=".pdf" />
                                 </div>
                             ) : (
                                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
                                     <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 uppercase">
-                                        <div className="col-span-6">Description</div>
-                                        <div className="col-span-2">Unit</div>
-                                        <div className="col-span-3">Quantity</div>
+                                        <div className="col-span-6">{t('admin.create.description')}</div>
+                                        <div className="col-span-2">{t('admin.create.unit')}</div>
+                                        <div className="col-span-3">{t('admin.create.quantity')}</div>
                                         <div className="col-span-1"></div>
                                     </div>
 
@@ -301,10 +260,10 @@ const CreateTender = () => {
                                         onClick={addBoqItem}
                                         className="w-full border-dashed"
                                     >
-                                        + Add Item
+                                        + {t('admin.create.addItem')}
                                     </Button>
                                     <p className="text-xs text-gray-500 mt-2">
-                                        Manually enter the items that contractors will bid on.
+                                        {t('admin.create.manualNote')}
                                     </p>
                                 </div>
                             )}
@@ -312,10 +271,10 @@ const CreateTender = () => {
 
                         <div className="flex justify-end gap-2 pt-4">
                             <Button type="button" variant="outline" onClick={() => navigate('/admin')}>
-                                Cancel
+                                {t('admin.create.cancel')}
                             </Button>
                             <Button type="submit" disabled={loading}>
-                                {loading ? 'Creating...' : 'Create Tender'}
+                                {loading ? t('admin.create.creating') : t('admin.create.submit')}
                             </Button>
                         </div>
                     </form>

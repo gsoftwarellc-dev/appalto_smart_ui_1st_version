@@ -52,7 +52,7 @@ const Header = ({ onMenuClick }) => {
                 </div>
 
                 {/* Logout */}
-                <Button variant="ghost" size="sm" onClick={logout} title={t('common.logout')}>
+                <Button variant="ghost" size="sm" onClick={logout} title={t('sidebar.logout')}>
                     <LogOut className="h-5 w-5 text-gray-500 hover:text-red-500" />
                 </Button>
             </div>

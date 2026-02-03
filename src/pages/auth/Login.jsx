@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/Card';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Globe } from 'lucide-react';
 
 const Login = () => {
     const [role, setRole] = useState('contractor');
@@ -14,7 +14,12 @@ const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'en' ? 'it' : 'en';
+        i18n.changeLanguage(newLang);
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -43,7 +48,14 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 relative">
+            <div className="absolute top-4 right-4">
+                <Button variant="ghost" size="sm" onClick={toggleLanguage} className="flex items-center gap-2 bg-white/50 hover:bg-white shadow-sm">
+                    <Globe className="h-4 w-4" />
+                    <span className="uppercase font-medium">{i18n.language === 'en' ? 'English' : 'Italiano'}</span>
+                </Button>
+            </div>
+
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="space-y-4 flex flex-col items-center">
                     <img src="/logo.jpg" alt="Appalto Smart Logo" className="h-16 w-auto rounded-md shadow-sm" />
@@ -55,7 +67,6 @@ const Login = () => {
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-6">
 
-                        {/* Role Selection Dropdown Replacement */}
                         {/* Role Selection Dropdown Replacement */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium leading-none">{t('auth.select_dashboard')}</label>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
@@ -8,6 +9,7 @@ import { Search, User, MapPin, Briefcase, Mail, Phone } from 'lucide-react';
 
 const ContractorManagement = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('All');
 
@@ -70,13 +72,11 @@ const ContractorManagement = () => {
         return matchesSearch && matchesLocation;
     });
 
-
-
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Contractor Management</h2>
-                <p className="text-gray-500">View and manage all registered contractors.</p>
+                <h2 className="text-3xl font-bold tracking-tight">{t('admin.contractorManagement.title')}</h2>
+                <p className="text-gray-500">{t('admin.contractorManagement.subtitle')}</p>
             </div>
 
             {/* Search and Filter */}
@@ -84,7 +84,7 @@ const ContractorManagement = () => {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search by name, location, or expertise..."
+                        placeholder={t('admin.contractorManagement.searchPlaceholder')}
                         className="pl-9"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -98,7 +98,7 @@ const ContractorManagement = () => {
                     >
                         {locations.map(location => (
                             <option key={location} value={location}>
-                                {location === 'All' ? 'All Locations' : location}
+                                {location === 'All' ? t('admin.contractorManagement.locationFilter.all') : location}
                             </option>
                         ))}
                     </select>
@@ -109,13 +109,13 @@ const ContractorManagement = () => {
             <div className="grid gap-4 md:grid-cols-4">
                 <Card>
                     <CardContent className="p-6">
-                        <div className="text-sm font-medium text-gray-500 mb-1">Total Contractors</div>
+                        <div className="text-sm font-medium text-gray-500 mb-1">{t('admin.contractorManagement.stats.total')}</div>
                         <div className="text-3xl font-bold text-blue-600">{contractors.length}</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-6">
-                        <div className="text-sm font-medium text-gray-500 mb-1">Total Bids</div>
+                        <div className="text-sm font-medium text-gray-500 mb-1">{t('admin.contractorManagement.stats.bids')}</div>
                         <div className="text-3xl font-bold text-purple-600">
                             {contractors.reduce((sum, c) => sum + c.totalBids, 0)}
                         </div>
@@ -123,7 +123,7 @@ const ContractorManagement = () => {
                 </Card>
                 <Card>
                     <CardContent className="p-6">
-                        <div className="text-sm font-medium text-gray-500 mb-1">Award Rate</div>
+                        <div className="text-sm font-medium text-gray-500 mb-1">{t('admin.contractorManagement.stats.awardRate')}</div>
                         <div className="text-3xl font-bold text-green-600">
                             {Math.round((contractors.reduce((sum, c) => sum + c.wonBids, 0) / contractors.reduce((sum, c) => sum + c.totalBids, 0)) * 100)}%
                         </div>
@@ -166,21 +166,21 @@ const ContractorManagement = () => {
                             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between">
                                 <div className="text-center">
                                     <div className="text-lg font-bold text-gray-900">{contractor.totalBids}</div>
-                                    <div className="text-xs text-gray-500">Total Bids</div>
+                                    <div className="text-xs text-gray-500">{t('admin.contractorManagement.card.totalBids')}</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-lg font-bold text-green-600">{contractor.wonBids}</div>
-                                    <div className="text-xs text-gray-500">Won</div>
+                                    <div className="text-xs text-gray-500">{t('admin.contractorManagement.card.won')}</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-lg font-bold text-red-600">{contractor.totalBids - contractor.wonBids}</div>
-                                    <div className="text-xs text-gray-500">Lost</div>
+                                    <div className="text-xs text-gray-500">{t('admin.contractorManagement.card.lost')}</div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 mt-4">
                                 <Button variant="outline" size="sm">
-                                    <User className="h-3 w-3 mr-1" /> View Profile
+                                    <User className="h-3 w-3 mr-1" /> {t('admin.contractorManagement.card.viewProfile')}
                                 </Button>
 
                             </div>
@@ -191,8 +191,8 @@ const ContractorManagement = () => {
 
             {filteredContractors.length === 0 && (
                 <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <h3 className="text-lg font-medium text-gray-900">No contractors found</h3>
-                    <p className="text-gray-500">Try adjusting your search criteria or location filter.</p>
+                    <h3 className="text-lg font-medium text-gray-900">{t('admin.contractorManagement.noResults')}</h3>
+                    <p className="text-gray-500">{t('admin.contractorManagement.noResultsDesc')}</p>
                 </div>
             )}
         </div>

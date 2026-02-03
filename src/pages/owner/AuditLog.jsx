@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { Search, Shield, Filter, Download, List } from 'lucide-react';
+import { Search, Shield } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -13,6 +14,7 @@ import {
 } from "../../components/ui/Table";
 
 const AuditLog = () => {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
     // Mock Audit Logs
@@ -33,8 +35,8 @@ const AuditLog = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">Audit & Compliance Log</h2>
-                <p className="text-gray-500">Immutable record of all critical system actions for legal and security traceability.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.audit.title')}</h2>
+                <p className="text-gray-500">{t('owner.audit.subtitle')}</p>
             </div>
 
             <Card>
@@ -42,12 +44,12 @@ const AuditLog = () => {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-2 w-full md:w-auto">
                             <Shield className="h-5 w-5 text-gray-500" />
-                            <CardTitle>System Activity</CardTitle>
+                            <CardTitle>{t('owner.audit.systemActivity')}</CardTitle>
                         </div>
                         <div className="relative w-full md:w-96">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Search by action, user, or details..."
+                                placeholder={t('owner.audit.searchPlaceholder')}
                                 className="pl-9"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -59,11 +61,11 @@ const AuditLog = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Timestamp</TableHead>
-                                <TableHead>Action</TableHead>
-                                <TableHead>User</TableHead>
-                                <TableHead>Details</TableHead>
-                                <TableHead>IP Address</TableHead>
+                                <TableHead>{t('owner.audit.timestamp')}</TableHead>
+                                <TableHead>{t('owner.audit.action')}</TableHead>
+                                <TableHead>{t('owner.audit.user')}</TableHead>
+                                <TableHead>{t('owner.audit.details')}</TableHead>
+                                <TableHead>{t('owner.audit.ip')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

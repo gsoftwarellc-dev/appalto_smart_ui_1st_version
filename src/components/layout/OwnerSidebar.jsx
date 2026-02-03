@@ -19,13 +19,13 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
 
     const links = [
-        { to: '/owner', icon: LayoutDashboard, label: 'Dashboard', end: true },
-        { to: '/owner/users', icon: Users, label: 'User Management' },
-        { to: '/owner/tenders', icon: FileText, label: 'Tender Oversight' },
-        { to: '/owner/revenue', icon: DollarSign, label: 'Revenue' },
-        { to: '/owner/audit', icon: Shield, label: 'Audit & Compliance' },
-        { to: '/owner/config', icon: Settings, label: 'Configuration' },
-        { to: '/owner/notifications', icon: Bell, label: 'Notifications' },
+        { to: '/owner', icon: LayoutDashboard, label: t('owner.sidebar.dashboard'), end: true },
+        { to: '/owner/users', icon: Users, label: t('owner.sidebar.userManagement') },
+        { to: '/owner/tenders', icon: FileText, label: t('owner.sidebar.tenderOversight') },
+        { to: '/owner/revenue', icon: DollarSign, label: t('owner.sidebar.revenue') },
+        { to: '/owner/audit', icon: Shield, label: t('owner.sidebar.audit') },
+        { to: '/owner/config', icon: Settings, label: t('owner.sidebar.configuration') },
+        { to: '/owner/notifications', icon: Bell, label: t('owner.sidebar.notifications') },
     ];
 
     return (
@@ -59,7 +59,7 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Platform Management
+                        {t('owner.sidebar.platformManagement')}
                     </div>
                     {links.map((link) => (
                         <NavLink
@@ -88,7 +88,7 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
                         className="flex w-full items-center px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-900/20 transition-colors"
                     >
                         <LogOut className="mr-3 h-5 w-5" />
-                        {t('common.logout')}
+                        {t('sidebar.logout')}
                     </button>
                 </div>
             </aside>

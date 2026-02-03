@@ -37,7 +37,7 @@ const TendersList = () => {
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search tenders..." className="w-full pl-9" />
+                    <Input placeholder={t('admin.list.searchPlaceholder')} className="w-full pl-9" />
                 </div>
 
                 {/* Date Range Filter */}
@@ -48,7 +48,7 @@ const TendersList = () => {
                         value={dateRange.from}
                         onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
                         className="border-0 w-32 text-sm p-0 focus:ring-0"
-                        placeholder="From"
+                        placeholder={t('admin.list.from')}
                     />
                     <span className="text-gray-400">-</span>
                     <Input
@@ -56,7 +56,7 @@ const TendersList = () => {
                         value={dateRange.to}
                         onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
                         className="border-0 w-32 text-sm p-0 focus:ring-0"
-                        placeholder="To"
+                        placeholder={t('admin.list.to')}
                     />
                 </div>
             </div>
@@ -66,11 +66,11 @@ const TendersList = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Bids</TableHead>
-                                <TableHead>Deadline</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead>{t('admin.list.title')}</TableHead>
+                                <TableHead>{t('admin.list.status')}</TableHead>
+                                <TableHead>{t('admin.list.bids')}</TableHead>
+                                <TableHead>{t('admin.list.deadline')}</TableHead>
+                                <TableHead className="text-right">{t('admin.list.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -86,7 +86,7 @@ const TendersList = () => {
                                     <TableCell>{tender.deadline}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link to={`/admin/tenders/${tender.id}`}>View</Link>
+                                            <Link to={`/admin/tenders/${tender.id}`}>{t('admin.list.view')}</Link>
                                         </Button>
                                     </TableCell>
                                 </TableRow>

@@ -28,6 +28,16 @@ const MyBids = () => {
 
     const tabs = ['All', 'Pending', 'Won', 'Lost'];
 
+    const getTabLabel = (tab) => {
+        switch (tab) {
+            case 'All': return t('contractor.bids.tabs.all');
+            case 'Pending': return t('contractor.bids.tabs.pending');
+            case 'Won': return t('contractor.bids.tabs.won');
+            case 'Lost': return t('contractor.bids.tabs.lost');
+            default: return tab;
+        }
+    };
+
     const getStatusVariant = (status) => {
         switch (status) {
             case 'Awarded': return 'success';
@@ -36,6 +46,18 @@ const MyBids = () => {
             default: return 'secondary'; // Submitted
         }
     };
+
+    // Helper to translate status for display
+    const getStatusDisplay = (status) => {
+        switch (status) {
+            case 'Awarded': return t('contractor.dashboard.won');
+            case 'Not Selected': return t('contractor.dashboard.notSelected');
+            case 'Under Review': return t('contractor.dashboard.pending');
+            case 'Submitted': return t('contractor.bids.tabs.pending');
+            default: return status;
+        }
+    }
+
 
     return (
         <div className="space-y-6">
@@ -48,12 +70,12 @@ const MyBids = () => {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === tab
-                                ? 'bg-white border text-blue-600 border-b-white -mb-px relative z-10'
-                                : 'text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-white border text-blue-600 border-b-white -mb-px relative z-10'
+                            : 'text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100'
                             }`}
                         style={{ borderBottomColor: activeTab === tab ? 'white' : undefined }}
                     >
-                        {tab}
+                        {getTabLabel(tab)}
                     </button>
                 ))}
             </div>
@@ -63,11 +85,11 @@ const MyBids = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Tender</TableHead>
-                                <TableHead>Submission Date</TableHead>
-                                <TableHead>Bid Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
+                                <TableHead>{t('contractor.bids.table.tender')}</TableHead>
+                                <TableHead>{t('contractor.bids.table.submissionDate')}</TableHead>
+                                <TableHead>{t('contractor.bids.table.bidAmount')}</TableHead>
+                                <TableHead>{t('contractor.bids.table.status')}</TableHead>
+                                <TableHead className="text-right">{t('contractor.bids.table.action')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -78,12 +100,12 @@ const MyBids = () => {
                                     <TableCell>€{bid.amount.toLocaleString()}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(bid.status)}>
-                                            {bid.status}
+                                            {getStatusDisplay(bid.status)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right flex justify-end gap-2">
-                                        <Button variant="ghost" size="sm" asChild title="View Details">
-                                            <Link to={`/contractor/tenders/${bid.id}`}>Details</Link>
+                                        <Button variant="ghost" size="sm" asChild title={t('contractor.bids.details')}>
+                                            <Link to={`/contractor/tenders/${bid.id}`}>{t('contractor.bids.details')}</Link>
                                         </Button>
                                         <Button variant="outline" size="sm" className="gap-1 h-8">
                                             <FileText className="h-3 w-3" /> PDF
@@ -94,7 +116,7 @@ const MyBids = () => {
                             {filteredBids.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-6 text-gray-400">
-                                        No bids in this category.
+                                        {t('contractor.bids.noBids')}
                                     </TableCell>
                                 </TableRow>
                             )}

@@ -14,10 +14,10 @@ const Dashboard = () => {
 
     // Enhanced Mock Data
     const stats = [
-        { title: "Total Tenders", value: "12", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-        { title: "Active Tenders", value: "5", icon: Clock, color: "text-green-600", bg: "bg-green-50" },
-        { title: "Total Bids", value: "28", icon: FileCheck, color: "text-purple-600", bg: "bg-purple-50" },
-        { title: "Contractors", value: "24", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
+        { title: t('admin.dashboard.totalTenders'), value: "12", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
+        { title: t('admin.dashboard.activeTenders'), value: "5", icon: Clock, color: "text-green-600", bg: "bg-green-50" },
+        { title: t('admin.dashboard.totalBids'), value: "28", icon: FileCheck, color: "text-purple-600", bg: "bg-purple-50" },
+        { title: t('admin.dashboard.contractors'), value: "24", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
     ];
 
     const recentTenders = [
@@ -56,8 +56,8 @@ const Dashboard = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard', 'Client Dashboard')}</h2>
-                    <p className="text-gray-500">Manage your tender requests and compare offers</p>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
+                    <p className="text-gray-500">{t('admin.dashboard.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* Date Range Filter */}
@@ -68,7 +68,7 @@ const Dashboard = () => {
                             value={dateRange.from}
                             onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
                             className="border-0 w-32 text-sm p-0 focus:ring-0"
-                            placeholder="From"
+                            placeholder={t('admin.list.from')}
                         />
                         <span className="text-gray-400">-</span>
                         <Input
@@ -76,7 +76,7 @@ const Dashboard = () => {
                             value={dateRange.to}
                             onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
                             className="border-0 w-32 text-sm p-0 focus:ring-0"
-                            placeholder="To"
+                            placeholder={t('admin.list.to')}
                         />
                     </div>
                     <Link to="/admin/create-tender">
@@ -113,18 +113,18 @@ const Dashboard = () => {
                 {/* Recent Tenders */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Recent Tenders</CardTitle>
+                        <CardTitle>{t('admin.dashboard.recentTenders')}</CardTitle>
                         <Link to="/admin/tenders">
-                            <Button variant="ghost" size="sm">View All</Button>
+                            <Button variant="ghost" size="sm">{t('admin.dashboard.viewAll')}</Button>
                         </Link>
                     </CardHeader>
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Bids</TableHead>
+                                    <TableHead>{t('admin.list.title')}</TableHead>
+                                    <TableHead>{t('admin.list.status')}</TableHead>
+                                    <TableHead>{t('admin.list.bids')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -147,7 +147,7 @@ const Dashboard = () => {
                 {/* Tender Status Distribution Pie Chart */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Tender Status Distribution</CardTitle>
+                        <CardTitle>{t('admin.dashboard.tenderStatusDist')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={250}>
@@ -177,7 +177,7 @@ const Dashboard = () => {
             {/* Recent Activity */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Recent Activity</CardTitle>
+                    <CardTitle>{t('admin.dashboard.recentActivity')}</CardTitle>
                     <Bell className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
@@ -198,24 +198,24 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
+                    <CardTitle>{t('admin.dashboard.quickActions')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                         <Link to="/admin/bids">
                             <Button variant="outline" className="w-full justify-start">
-                                <FileCheck className="h-4 w-4 mr-2" /> Manage Bids
+                                <FileCheck className="h-4 w-4 mr-2" /> {t('admin.dashboard.manageBids')}
                             </Button>
                         </Link>
                         <Link to="/admin/contractors">
                             <Button variant="outline" className="w-full justify-start">
-                                <Users className="h-4 w-4 mr-2" /> View Contractors
+                                <Users className="h-4 w-4 mr-2" /> {t('admin.dashboard.viewContractors')}
                             </Button>
                         </Link>
 
                         <Link to="/admin/documents">
                             <Button variant="outline" className="w-full justify-start">
-                                <FileText className="h-4 w-4 mr-2" /> View Documents
+                                <FileText className="h-4 w-4 mr-2" /> {t('admin.dashboard.viewDocuments')}
                             </Button>
                         </Link>
                     </div>
