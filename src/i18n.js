@@ -307,6 +307,17 @@ const resources = {
                     "searchPlaceholder": "Search title, client...",
                     "allStatus": "All Status"
                 },
+                "sidebar": {
+                    "panelTitle": "OWNER PANEL",
+                    "dashboard": "Dashboard",
+                    "userManagement": "User Management",
+                    "tenderOversight": "Tender Oversight",
+                    "revenue": "Revenue",
+                    "audit": "Audit Log",
+                    "configuration": "Configuration",
+                    "notifications": "Notifications",
+                    "platformManagement": "Platform Management"
+                },
                 "configuration": {
                     "title": "Platform Configuration",
                     "subtitle": "Manage global system settings, pricing, and operational parameters.",
@@ -889,6 +900,17 @@ const resources = {
                     "avgBids": "Media Offerte/Gara",
                     "searchPlaceholder": "Cerca titolo, cliente...",
                     "allStatus": "Tutti gli Stati"
+                },
+                "sidebar": {
+                    "panelTitle": "PANNELLO PROPRIETARIO",
+                    "dashboard": "Dashboard",
+                    "userManagement": "Gestione Utenti",
+                    "tenderOversight": "Supervisione Gare",
+                    "revenue": "Entrate",
+                    "audit": "Registro Audit",
+                    "configuration": "Configurazione",
+                    "notifications": "Notifiche",
+                    "platformManagement": "Gestione Piattaforma"
                 },
                 "configuration": {
                     "title": "Configurazione Piattaforma",
