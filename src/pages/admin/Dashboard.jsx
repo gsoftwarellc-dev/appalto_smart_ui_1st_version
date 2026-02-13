@@ -1,84 +1,89 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { PlusCircle, FileText, Users, Clock, FileCheck, Bell, Calendar } from 'lucide-react';
+import { PlusCircle, FileText, Users, Clock, FileCheck, Bell, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import BackendApiService from '../../services/backendApi';
 
 const Dashboard = () => {
     const { t } = useTranslation();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [data, setData] = useState({
+        stats: { total_tenders: 0, active_tenders: 0, total_bids: 0, total_contractors: 0 },
+        recent_tenders: [],
+        pie_chart_data: []
+    });
 
-    // Enhanced Mock Data
-    const stats = [
-        { title: t('admin.dashboard.totalTenders'), value: "12", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-        { title: t('admin.dashboard.activeTenders'), value: "5", icon: Clock, color: "text-green-600", bg: "bg-green-50" },
-        { title: t('admin.dashboard.totalBids'), value: "28", icon: FileCheck, color: "text-purple-600", bg: "bg-purple-50" },
-        { title: t('admin.dashboard.contractors'), value: "24", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
-    ];
+    useEffect(() => {
+        loadDashboardData();
+    }, []);
 
-    const recentTenders = [
-        { id: 1, title: "Roof Renovation - Via Roma 5", status: "Open", bids: 3, deadline: "2026-02-15" },
-        { id: 2, title: "Elevator Maintenance - Via Milano 12", status: "Review", bids: 5, deadline: "2026-01-30" },
-        { id: 3, title: "Garden Cleaning - Piazza Verdi", status: "Awarded", bids: 2, deadline: "2026-01-10" },
-    ];
+    const loadDashboardData = async () => {
+        try {
+            setLoading(true);
+            const dashboardData = await BackendApiService.getAdminDashboardStats();
+            setData({
+                stats: dashboardData?.stats || { total_tenders: 0, active_tenders: 0, total_bids: 0, total_contractors: 0 },
+                recent_tenders: Array.isArray(dashboardData?.recent_tenders) ? dashboardData.recent_tenders : [],
+                pie_chart_data: Array.isArray(dashboardData?.pie_chart_data) ? dashboardData.pie_chart_data : []
+            });
+            setError(null);
+        } catch (error) {
+            console.error("Failed to load admin dashboard data", error);
+            setError(t('admin.dashboard.errorLoad'));
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const recentActivity = [
-        { id: 1, type: "bid", message: "New bid received from Giovanni Rossi for Roof Renovation", time: "2 hours ago", color: "text-blue-600" },
-        { id: 2, type: "tender", message: "Facade Painting tender published successfully", time: "5 hours ago", color: "text-green-600" },
-
-        { id: 4, type: "award", message: "Garden Maintenance awarded to Luca Verdi", time: "2 days ago", color: "text-orange-600" },
-    ];
-
-    // Pie Chart Data - Tender Status Distribution
-    const pieChartData = [
-        { name: 'Open', value: 5, color: '#10b981' },
-        { name: 'Under Review', value: 4, color: '#f59e0b' },
-        { name: 'Awarded', value: 2, color: '#3b82f6' },
-        { name: 'Closed', value: 1, color: '#6b7280' },
+    const statsCards = [
+        { title: t('admin.dashboard.totalTenders'), value: data.stats?.total_tenders || 0, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
+        { title: t('admin.dashboard.activeTenders'), value: data.stats?.active_tenders || 0, icon: Clock, color: "text-green-600", bg: "bg-green-50" },
+        { title: t('admin.dashboard.totalBids'), value: data.stats?.total_bids || 0, icon: FileCheck, color: "text-purple-600", bg: "bg-purple-50" },
+        { title: t('admin.dashboard.contractors'), value: data.stats?.total_contractors || 0, icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
     ];
 
     const getStatusVariant = (status) => {
         switch (status) {
-            case 'Open': return 'success';
-            case 'Review': return 'warning';
-            case 'Awarded': return 'default';
-            default: return 'secondary';
+            case 'published': return 'success';
+            case 'draft': return 'warning';
+            case 'closed': return 'secondary';
+            default: return 'default';
         }
     };
 
-    const [dateRange, setDateRange] = useState({ from: '', to: '' });
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case 'published': return t('admin.dashboard.status.open');
+            case 'draft': return t('admin.dashboard.status.draft');
+            case 'closed': return t('admin.dashboard.status.closed');
+            default: return status;
+        }
+    };
+
+    if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
+
+    if (error) return (
+        <div className="p-8 text-center">
+            <h3 className="text-lg font-medium text-red-600">{t('admin.dashboard.errorTitle')}</h3>
+            <p className="text-gray-500">{error}</p>
+            <Button variant="outline" className="mt-4" onClick={loadDashboardData}>{t('admin.dashboard.retry')}</Button>
+        </div>
+    );
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('admin.dashboard.title')}</h2>
                     <p className="text-gray-500">{t('admin.dashboard.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* Date Range Filter */}
-                    <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <Input
-                            type="date"
-                            value={dateRange.from}
-                            onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                            className="border-0 w-32 text-sm p-0 focus:ring-0"
-                            placeholder={t('admin.list.from')}
-                        />
-                        <span className="text-gray-400">-</span>
-                        <Input
-                            type="date"
-                            value={dateRange.to}
-                            onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                            className="border-0 w-32 text-sm p-0 focus:ring-0"
-                            placeholder={t('admin.list.to')}
-                        />
-                    </div>
                     <Link to="/admin/create-tender">
                         <Button className="flex items-center gap-2">
                             <PlusCircle className="h-4 w-4" />
@@ -90,7 +95,7 @@ const Dashboard = () => {
 
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat, index) => (
+                {statsCards.map((stat, index) => (
                     <Card key={index} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -119,28 +124,37 @@ const Dashboard = () => {
                         </Link>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t('admin.list.title')}</TableHead>
-                                    <TableHead>{t('admin.list.status')}</TableHead>
-                                    <TableHead>{t('admin.list.bids')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recentTenders.map((tender) => (
-                                    <TableRow key={tender.id}>
-                                        <TableCell className="font-medium">{tender.title}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={getStatusVariant(tender.status)}>
-                                                {tender.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="font-semibold">{tender.bids}</TableCell>
+                        {data.recent_tenders.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t('admin.list.title')}</TableHead>
+                                        <TableHead>{t('admin.list.status')}</TableHead>
+                                        <TableHead>{t('admin.list.bids')}</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {data.recent_tenders.map((tender) => (
+                                        <TableRow key={tender.id}>
+                                            <TableCell className="font-medium">{tender.title}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={getStatusVariant(tender.status)}>
+                                                    {getStatusLabel(tender.status)}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-semibold">{tender.bids}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <div className="p-6 text-center text-gray-500">
+                                <p>{t('admin.dashboard.noTenders')}</p>
+                                <Link to="/admin/create-tender">
+                                    <Button variant="link" className="mt-2">{t('admin.dashboard.createFirst')}</Button>
+                                </Link>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -150,77 +164,38 @@ const Dashboard = () => {
                         <CardTitle>{t('admin.dashboard.tenderStatusDist')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <PieChart>
-                                <Pie
-                                    data={pieChartData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {pieChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {data.pie_chart_data.filter(d => d.value > 0).length > 0 ? (
+                            <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={data.pie_chart_data.filter(d => d.value > 0)}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {data.pie_chart_data.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-[250px] flex flex-col items-center justify-center text-gray-400">
+                                <FileText className="h-12 w-12 mb-2 opacity-20" />
+                                <p>{t('admin.dashboard.noData')}</p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Recent Activity */}
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>{t('admin.dashboard.recentActivity')}</CardTitle>
-                    <Bell className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {recentActivity.map((activity) => (
-                            <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
-                                <div className="h-2 w-2 rounded-full bg-blue-500 mt-2"></div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-gray-900">{activity.message}</p>
-                                    <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
 
-            {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('admin.dashboard.quickActions')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                        <Link to="/admin/bids">
-                            <Button variant="outline" className="w-full justify-start">
-                                <FileCheck className="h-4 w-4 mr-2" /> {t('admin.dashboard.manageBids')}
-                            </Button>
-                        </Link>
-                        <Link to="/admin/contractors">
-                            <Button variant="outline" className="w-full justify-start">
-                                <Users className="h-4 w-4 mr-2" /> {t('admin.dashboard.viewContractors')}
-                            </Button>
-                        </Link>
-
-                        <Link to="/admin/documents">
-                            <Button variant="outline" className="w-full justify-start">
-                                <FileText className="h-4 w-4 mr-2" /> {t('admin.dashboard.viewDocuments')}
-                            </Button>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 };

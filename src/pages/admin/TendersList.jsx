@@ -1,100 +1,220 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
-import { PlusCircle, Search, Calendar } from 'lucide-react';
+import { Input } from '../../components/ui/Input';
+import { Search, Loader2, Eye, Edit, FileText, MapPin, Calendar, Euro } from 'lucide-react';
+import BackendApiService from '../../services/backendApi';
 
 const TendersList = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [tenders, setTenders] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
 
-    // Mock Data (will be replaced by API call)
-    const tenders = [
-        { id: 1, title: "Roof Renovation - Via Roma 5", status: "Open", bids: 3, deadline: "2026-02-15" },
-        { id: 2, title: "Elevator Maintenance - Via Milano 12", status: "Review", bids: 5, deadline: "2026-01-30" },
-        { id: 3, title: "Garden Cleaning - Piazza Verdi", status: "Awarded", bids: 2, deadline: "2026-01-10" },
-        { id: 4, title: "Electrical Upgrade - Via Napoli 8", status: "Open", bids: 0, deadline: "2026-03-01" },
-    ];
+    useEffect(() => {
+        loadTenders();
+    }, []);
 
-    const [dateRange, setDateRange] = useState({ from: '', to: '' });
+    const loadTenders = async () => {
+        try {
+            setLoading(true);
+            const data = await BackendApiService.getTenders({});
+            setTenders(data || []);
+            setError(null);
+        } catch (error) {
+            console.error("Failed to load tenders", error);
+            setError("Failed to load tenders. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStatusVariant = (status) => {
+        switch (status) {
+            case 'published': return 'success';
+            case 'draft': return 'warning';
+            case 'closed': return 'secondary';
+            default: return 'default';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case 'published': return t('admin.tendersList.statusPublished');
+            case 'draft': return t('admin.tendersList.statusDraft');
+            case 'closed': return t('admin.tendersList.statusClosed');
+            default: return status;
+        }
+    };
+
+    const filteredTenders = tenders.filter(tender => {
+        const matchesSearch =
+            tender.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tender.location?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || tender.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
+
+    if (error) return (
+        <div className="p-8 text-center">
+            <h3 className="text-lg font-medium text-red-600">Error</h3>
+            <p className="text-gray-500">{error}</p>
+            <Button variant="outline" className="mt-4" onClick={loadTenders}>Retry</Button>
+        </div>
+    );
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-3xl font-bold tracking-tight">{t('admin.tendersList')}</h2>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('admin.tendersList.title')}</h2>
+                    <p className="text-gray-500">{t('admin.tendersList.subtitle')}</p>
+                </div>
                 <Link to="/admin/create-tender">
                     <Button className="flex items-center gap-2">
-                        <PlusCircle className="h-4 w-4" />
+                        <FileText className="h-4 w-4" />
                         {t('admin.createTender')}
                     </Button>
                 </Link>
             </div>
 
-            {/* Filters and Search */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1 max-w-md">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input placeholder={t('admin.list.searchPlaceholder')} className="w-full pl-9" />
+                    <Input
+                        placeholder={t('admin.list.searchPlaceholder')}
+                        className="pl-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-
-                {/* Date Range Filter */}
-                <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <Input
-                        type="date"
-                        value={dateRange.from}
-                        onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                        className="border-0 w-32 text-sm p-0 focus:ring-0"
-                        placeholder={t('admin.list.from')}
-                    />
-                    <span className="text-gray-400">-</span>
-                    <Input
-                        type="date"
-                        value={dateRange.to}
-                        onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                        className="border-0 w-32 text-sm p-0 focus:ring-0"
-                        placeholder={t('admin.list.to')}
-                    />
+                <div className="w-full md:w-48">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                        <option value="All">{t('admin.tendersList.allStatus')}</option>
+                        <option value="draft">{t('admin.tendersList.statusDraft')}</option>
+                        <option value="published">{t('admin.tendersList.statusPublished')}</option>
+                        <option value="closed">{t('admin.tendersList.statusClosed')}</option>
+                    </select>
                 </div>
             </div>
 
-            <Card>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('admin.list.title')}</TableHead>
-                                <TableHead>{t('admin.list.status')}</TableHead>
-                                <TableHead>{t('admin.list.bids')}</TableHead>
-                                <TableHead>{t('admin.list.deadline')}</TableHead>
-                                <TableHead className="text-right">{t('admin.list.actions')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {tenders.map((tender) => (
-                                <TableRow key={tender.id}>
-                                    <TableCell className="font-medium">{tender.title}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={tender.status === 'Open' ? 'success' : 'secondary'}>
-                                            {tender.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{tender.bids}</TableCell>
-                                    <TableCell>{tender.deadline}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" asChild>
-                                            <Link to={`/admin/tenders/${tender.id}`}>{t('admin.list.view')}</Link>
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            {/* Tenders Grid */}
+            <div className="grid gap-6">
+                {filteredTenders.map((tender) => (
+                    <Card
+                        key={tender.id}
+                        className="relative group hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 overflow-hidden bg-white ring-1 ring-gray-50/50 cursor-pointer"
+                        onClick={() => navigate(`/admin/tenders/${tender.id}`)}
+                    >
+                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+                        <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                                <div className="flex-1 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                            {tender.title}
+                                        </h3>
+                                        {tender.status === 'published' ? (
+                                            <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-100 shadow-sm">
+                                                <span className="relative flex h-2.5 w-2.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                                                </span>
+                                                <span className="text-xs font-semibold uppercase tracking-wide">{getStatusLabel(tender.status)}</span>
+                                            </div>
+                                        ) : (
+                                            <Badge variant={getStatusVariant(tender.status)} className="px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                                                {getStatusLabel(tender.status)}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {tender.description && (
+                                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 max-w-3xl">
+                                            {tender.description}
+                                        </p>
+                                    )}
+
+                                    <div className="flex flex-wrap items-center gap-6 pt-3 text-sm border-t border-gray-50 mt-4">
+                                        {tender.location && (
+                                            <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                                <MapPin className="h-4 w-4 text-blue-500" />
+                                                <span className="font-medium text-gray-700">{tender.location}</span>
+                                            </div>
+                                        )}
+                                        {tender.deadline && (
+                                            <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                                <Calendar className="h-4 w-4 text-orange-500" />
+                                                <span className="font-medium text-gray-700">{new Date(tender.deadline).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
+                                        {tender.budget && (
+                                            <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                                                <Euro className="h-4 w-4 text-green-600" />
+                                                <span className="font-medium text-gray-900 tracking-tight text-base">{parseFloat(tender.budget).toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors ml-auto md:ml-0">
+                                            <FileText className="h-4 w-4 text-purple-500" />
+                                            <span className="font-medium text-gray-700">{tender.bids_count || 0} {t('admin.tendersList.bids')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex md:flex-col gap-3 w-full md:w-auto shrink-0 min-w-[140px]">
+                                    <Button className="w-full bg-white text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm transition-all duration-300 font-medium group/btn h-10">
+                                        {t('admin.list.view')}
+                                        <Eye className="ml-2 h-4 w-4 transition-transform group-hover/btn:scale-110" />
+                                    </Button>
+
+                                    {tender.status === 'draft' && (
+                                        <Link
+                                            to={`/admin/edit-tender/${tender.id}`}
+                                            className="block"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <Button variant="ghost" className="w-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 h-10 border border-transparent hover:border-gray-200">
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                {t('admin.tendersList.edit')}
+                                            </Button>
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {filteredTenders.length === 0 && (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">{t('admin.tendersList.noTenders')}</h3>
+                    <p className="text-gray-500 mb-4">
+                        {searchTerm || statusFilter !== 'All'
+                            ? t('admin.tendersList.tryAdjusting')
+                            : t('admin.tendersList.getStarted')}
+                    </p>
+                    {!searchTerm && statusFilter === 'All' && (
+                        <Link to="/admin/create-tender">
+                            <Button>{t('admin.createTender')}</Button>
+                        </Link>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

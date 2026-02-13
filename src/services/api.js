@@ -64,4 +64,22 @@ export const mockLogin = async (email, password) => {
     });
 };
 
+// User Management API methods
+export const userApi = {
+    // Get all users with optional filters
+    getUsers: (params = {}) => api.get('/owner/users', { params }),
+
+    // Get specific user details
+    getUser: (id) => api.get(`/owner/users/${id}`),
+
+    // Update user status
+    updateStatus: (id, status) => api.put(`/owner/users/${id}/status`, { status }),
+
+    // Verify contractor
+    verifyContractor: (id) => api.put(`/owner/users/${id}/verify`),
+
+    // Get statistics
+    getStatistics: () => api.get('/owner/statistics'),
+};
+
 export default api;

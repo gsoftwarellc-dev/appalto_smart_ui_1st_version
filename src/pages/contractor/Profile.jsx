@@ -1,62 +1,149 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { useAuth } from '../../context/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { User, MapPin, Briefcase, Mail, Eye, X, CheckCircle, Star } from 'lucide-react';
+import { User, MapPin, Mail, Eye, X, CheckCircle, Star, Loader2, AlertCircle, FileText, Upload } from 'lucide-react';
+import BackendApiService from '../../services/backendApi';
+
+const BACKEND_URL = 'http://localhost:8000';
 
 const Profile = () => {
     const { t } = useTranslation();
+    const { updateUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Mock Profile Data
+    // Profile Data State
     const [profile, setProfile] = useState({
-        name: "Giovanni Rossi", // Legale Rappresentante
-        companyName: "Costruzioni Generali Rossi S.r.l.", // Denominazione
-        vatNumber: "12345678901",
-        fiscalCode: "RSSGNN80A01H501U",
-        address: "Via Roma 10",
-        city: "Roma",
-        province: "RM",
-        phone: "+39 333 1234567",
-        email: "contractor@example.com",
-        location: "Roma, Italy", // Computed or separate? Keeping for compatibility
-        expertise: "General Construction, Renovation",
-        description: "Experienced contractor with over 15 years in residential renovations.",
-        avatar: null,
-        visuraFile: null,
-        presentationFile: null
+        name: "",
+        email: "",
+        company_name: "",
+        vat_number: "",
+        fiscal_code: "",
+        address: "",
+        city: "",
+        province: "",
+        phone: "",
+        legal_representative: "",
+        bio: "",
+        expertise: "",
+        avatar_url: null,
+        documents: []
     });
 
-    const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfile(prev => ({ ...prev, avatar: reader.result }));
-            };
-            reader.readAsDataURL(file);
+    useEffect(() => {
+        loadProfile();
+    }, []);
+
+    const loadProfile = async () => {
+        try {
+            setLoading(true);
+            const data = await BackendApiService.getProfile();
+            setProfile(data);
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            setError(t('contractor.profile.loadError'));
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleFileChange = (e, field) => {
+    const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setProfile(prev => ({ ...prev, [field]: file }));
+            setError(null);
+            try {
+                // Optimistic update for immediate feedback
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setProfile(prev => ({ ...prev, avatar_url: reader.result }));
+                };
+                reader.readAsDataURL(file);
+
+                await BackendApiService.uploadAvatar(file);
+                // Refresh to ensure we have the correct URL from backend
+                loadProfile();
+            } catch (error) {
+                console.error("Avatar upload failed", error);
+                setError(error.response?.data?.message || t('contractor.profile.avatarError'));
+            }
         }
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
-        console.log("Saving profile:", profile);
+    const handleFileChange = async (e, type) => {
+        const file = e.target.files[0];
+        if (file) {
+            setError(null);
+            try {
+                await BackendApiService.uploadProfileDocument(file, type);
+                loadProfile(); // Refresh list to update UI state
+            } catch (error) {
+                console.error("Document upload failed", error);
+                setError(error.response?.data?.message || t('contractor.profile.docError'));
+            }
+        }
     };
+
+    const handleSave = async () => {
+        setError(null);
+        try {
+            setSaving(true);
+            const updatedProfile = await BackendApiService.updateProfile({
+                name: profile.name,
+                company_name: profile.company_name,
+                vat_number: profile.vat_number,
+                fiscal_code: profile.fiscal_code,
+                address: profile.address,
+                city: profile.city,
+                province: profile.province,
+                phone: profile.phone,
+                legal_representative: profile.legal_representative,
+                bio: profile.bio,
+                expertise: profile.expertise,
+            });
+
+            // Update global auth context so Header reflects changes immediately
+            if (updateUser) {
+                const currentUser = JSON.parse(localStorage.getItem('appalto_user') || '{}');
+                updateUser({ ...currentUser, ...updatedProfile });
+            }
+
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Save failed", err);
+            const msg = err.response?.data?.message || t('contractor.profile.saveError');
+            if (err.response?.data?.errors) {
+                const errors = Object.values(err.response.data.errors).flat().join(", ");
+                setError(`${msg}: ${errors}`);
+            } else {
+                setError(msg);
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const getDocument = (type) => {
+        return profile.documents?.find(d => d.document_type === type);
+    };
+
+    const getAvatarSrc = (url) => {
+        if (!url) return null;
+        return url.startsWith('http') || url.startsWith('data:') ? url : `${BACKEND_URL}${url}`;
+    };
+
+    if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6 p-4">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">{t('contractor.profile.title')}</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('contractor.profile.title')}</h2>
                 <Button variant="outline" onClick={() => setShowPreview(true)}>
                     <Eye className="h-4 w-4 mr-2" /> {t('contractor.profile.viewPublic')}
                 </Button>
@@ -68,60 +155,55 @@ const Profile = () => {
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
                         <button
                             onClick={() => setShowPreview(false)}
-                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 bg-white shadow-sm z-10"
                         >
                             <X className="h-5 w-5 text-gray-500" />
                         </button>
 
-                        {/* Mock Public Profile Layout */}
                         <div className="relative h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
                         <div className="px-8 pb-8">
                             <div className="relative -mt-16 mb-6 flex justify-between items-end">
                                 <div className="h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden shadow-md">
-                                    {profile.avatar ? (
-                                        <img src={profile.avatar} alt="Profile" className="h-full w-full object-cover" />
+                                    {profile.avatar_url ? (
+                                        <img
+                                            src={getAvatarSrc(profile.avatar_url)}
+                                            alt="Profile"
+                                            className="h-full w-full object-cover"
+                                        />
                                     ) : (
-                                        <User className="h-full w-full p-6 text-gray-400" />
+                                        <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                                            <User className="h-16 w-16 text-gray-400" />
+                                        </div>
                                     )}
                                 </div>
                                 <div className="mb-2">
-                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                                        <CheckCircle className="h-3 w-3 mr-1" /> {t('contractor.profile.verified')}
-                                    </Badge>
+                                    {profile.company_name && (
+                                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                                            <CheckCircle className="h-3 w-3 mr-1" /> {t('contractor.profile.verifiedCompany')}
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="text-2xl font-bold flex items-center gap-2">
-                                        {profile.companyName || profile.name}
+                                        {profile.company_name || profile.name}
                                         <div className="flex text-yellow-400">
-                                            <Star className="h-4 w-4 fill-current" />
-                                            <Star className="h-4 w-4 fill-current" />
-                                            <Star className="h-4 w-4 fill-current" />
-                                            <Star className="h-4 w-4 fill-current" />
-                                            <Star className="h-4 w-4 fill-current" />
+                                            {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                                         </div>
                                     </h2>
-                                    <p className="text-gray-500 flex items-center gap-2 mt-1">
-                                        <MapPin className="h-4 w-4" /> {profile.city}, {profile.province}
+                                    <p className="text-gray-500 font-medium">{profile.expertise || 'General Construction'}</p>
+                                    <p className="text-gray-500 flex items-center gap-2 mt-1 text-sm">
+                                        <MapPin className="h-3.5 w-3.5" /> {profile.city}, {profile.province}
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-100">
-                                    <div>
-                                        <p className="text-sm text-gray-500">{t('contractor.profile.expertise')}</p>
-                                        <p className="font-medium">{profile.expertise}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">{t('contractor.profile.memberSince')}</p>
-                                        <p className="font-medium">Gen 2024</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-semibold mb-2">{t('contractor.profile.about')}</h3>
-                                    <p className="text-gray-600 leading-relaxed">{profile.description}</p>
+                                <div className="border-t border-gray-100 pt-4">
+                                    <h3 className="font-semibold mb-2">{t('contractor.profile.aboutUs')}</h3>
+                                    <p className="text-gray-600 leading-relaxed text-sm">
+                                        {profile.bio || t('contractor.profile.noBio')}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -129,163 +211,252 @@ const Profile = () => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Profile Card */}
-                <Card className="md:col-span-1">
-                    <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Profile Card */}
+                <Card className="lg:col-span-1 h-fit shadow-sm border-gray-200">
+                    <CardContent className="pt-8 flex flex-col items-center text-center space-y-4">
                         <div className="relative group">
-                            <div className="h-32 w-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
-                                {profile.avatar ? (
-                                    <img src={profile.avatar} alt="Profile" className="h-full w-full object-cover" />
+                            <div className="h-32 w-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-md">
+                                {profile.avatar_url ? (
+                                    <img
+                                        src={getAvatarSrc(profile.avatar_url)}
+                                        alt="Profile"
+                                        className="h-full w-full object-cover"
+                                    />
                                 ) : (
-                                    <User className="h-full w-full p-6 text-gray-400" />
+                                    <div className="h-full w-full flex items-center justify-center bg-gray-50">
+                                        <User className="h-12 w-12 text-gray-300" />
+                                    </div>
                                 )}
                             </div>
-                            {isEditing && (
-                                <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                    <span className="text-xs">{t('contractor.profile.edit')}</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                                </label>
-                            )}
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold">{profile.name}</h3>
-                            <p className="text-sm text-gray-500">{profile.companyName}</p>
-                            <p className="text-xs text-gray-400 pt-1">{profile.expertise}</p>
+                            <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                                <span className="text-xs font-medium flex items-center"><Upload className="w-3 h-3 mr-1" /> {t('contractor.profile.changeAvatar')}</span>
+                                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                            </label>
                         </div>
 
-                        <div className="w-full pt-4 space-y-2 text-sm text-left">
-                            <div className="flex items-center gap-2 text-gray-600">
-                                <MapPin className="h-4 w-4" /> {profile.city}, {profile.province}
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-600">
-                                <Mail className="h-4 w-4" /> {profile.email}
-                            </div>
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-bold text-gray-900">{profile.name}</h3>
+                            <p className="text-sm font-medium text-gray-600">{profile.company_name}</p>
+                            <p className="text-xs text-gray-500">{profile.expertise || 'Construction & Renovation'}</p>
                         </div>
+
+                        {/* Contact info removed */}
                     </CardContent>
                 </Card>
 
-                {/* Details Form */}
-                <Card className="md:col-span-2">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>{t('contractor.profile.details')}</CardTitle>
+                {/* Right Column: Details Form */}
+                <Card className="lg:col-span-2 shadow-sm border-gray-200">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-gray-100">
+                        <div>
+                            <CardTitle className="text-xl font-bold">{t('contractor.profile.details')}</CardTitle>
+                        </div>
                         <Button
                             variant={isEditing ? "default" : "outline"}
                             onClick={isEditing ? handleSave : () => setIsEditing(true)}
+                            disabled={saving}
+                            className={isEditing ? "bg-blue-600 hover:bg-blue-700" : ""}
                         >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             {isEditing ? t('contractor.profile.save') : t('contractor.profile.edit')}
                         </Button>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <h3 className="font-bold text-lg">{t('contractor.profile.mandatory')}</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.companyName')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.companyName}
-                                    onChange={(e) => setProfile({ ...profile, companyName: e.target.value })}
-                                />
+                    <CardContent className="pt-6 space-y-8">
+                        {error && (
+                            <div className="p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200 flex items-start">
+                                <AlertCircle className="h-5 w-5 mr-3 mt-0.5 shrink-0" />
+                                <span>{error}</span>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.vat')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.vatNumber}
-                                    placeholder={t('contractor.profile.vat_ph')}
-                                    onChange={(e) => setProfile({ ...profile, vatNumber: e.target.value })}
-                                />
-                            </div>
-                        </div>
+                        )}
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold">{t('contractor.profile.headquarters')}</label>
-                            <Input
-                                disabled={!isEditing}
-                                value={profile.address}
-                                placeholder={t('contractor.profile.address_ph')}
-                                onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                            />
-                        </div>
+                        <section className="space-y-4">
+                            <h3 className="font-bold text-gray-900 text-base">{t('contractor.profile.mandatoryFields')}</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.city')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.city}
-                                    onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.province')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.province}
-                                    onChange={(e) => setProfile({ ...profile, province: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.email')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.email}
-                                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.phone')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.phone}
-                                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.legalRep')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.name}
-                                    placeholder={t('contractor.profile.legalRep_ph')}
-                                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold">{t('contractor.profile.fiscalCode')}</label>
-                                <Input
-                                    disabled={!isEditing}
-                                    value={profile.fiscalCode}
-                                    placeholder={t('contractor.profile.fiscalCode_ph')}
-                                    onChange={(e) => setProfile({ ...profile, fiscalCode: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2 pt-4 border-t border-gray-100">
-                            <label className="text-sm font-bold block">{t('contractor.profile.uploadVisura')}</label>
-                            {isEditing ? (
-                                <input type="file" accept=".pdf" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onChange={(e) => handleFileChange(e, 'visuraFile')} />
-                            ) : (
-                                <div className="text-sm text-gray-600 flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                    <CheckCircle className="h-4 w-4 text-green-500" /> {profile.visuraFile ? profile.visuraFile.name : "Visura_Camerale_Rossi_SRL.pdf"}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.companyName')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.company_name || ''}
+                                        placeholder="Company Name S.r.l."
+                                        onChange={(e) => setProfile({ ...profile, company_name: e.target.value })}
+                                    />
                                 </div>
-                            )}
-                        </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.vatNumber')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.vat_number || ''}
+                                        placeholder="IT12345678901"
+                                        onChange={(e) => setProfile({ ...profile, vat_number: e.target.value })}
+                                    />
+                                </div>
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold block">{t('contractor.profile.uploadPresentation')}</label>
-                            {isEditing ? (
-                                <input type="file" accept=".pdf" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onChange={(e) => handleFileChange(e, 'presentationFile')} />
-                            ) : (
-                                <p className="text-sm text-gray-400 italic">{t('contractor.profile.noFile')}</p>
-                            )}
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.headquarters')}</label>
+                                <Input
+                                    disabled={!isEditing}
+                                    value={profile.address || ''}
+                                    placeholder="Via Roma 10"
+                                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.city')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.city || ''}
+                                        placeholder="Rome"
+                                        onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.province')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.province || ''}
+                                        placeholder="RM"
+                                        maxLength={2}
+                                        onChange={(e) => setProfile({ ...profile, province: e.target.value.toUpperCase() })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.email')}</label>
+                                    <Input
+                                        disabled
+                                        value={profile.email || ''}
+                                        className="bg-gray-50 text-gray-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.phone')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.phone || ''}
+                                        placeholder="+39 333 1234567"
+                                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.legalRep')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.legal_representative || ''}
+                                        placeholder="Mario Rossi"
+                                        onChange={(e) => setProfile({ ...profile, legal_representative: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.fiscalCode')}</label>
+                                    <Input
+                                        disabled={!isEditing}
+                                        value={profile.fiscal_code || ''}
+                                        placeholder="RSSMRA80A01H501U"
+                                        onChange={(e) => setProfile({ ...profile, fiscal_code: e.target.value.toUpperCase() })}
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="border-t border-gray-100 pt-6 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.uploadChamber')}</label>
+
+                                {getDocument('visura_camerale') ? (
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-green-100 p-2 rounded-full">
+                                                <CheckCircle className="h-5 w-5 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                                                    {getDocument('visura_camerale').file_name}
+                                                </p>
+                                                <a
+                                                    href={`${BACKEND_URL}/storage/${getDocument('visura_camerale').file_path}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-blue-600 hover:underline flex items-center mt-0.5"
+                                                >
+                                                    <Eye className="h-3 w-3 mr-1" /> {t('contractor.profile.viewDoc')}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {isEditing && (
+                                            <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
+                                                {t('contractor.profile.replace')}
+                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'visura_camerale')} />
+                                            </label>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center ${isEditing ? 'border-gray-300 hover:border-blue-400 bg-gray-50 cursor-pointer' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+                                        <FileText className="h-10 w-10 text-gray-400 mb-2" />
+                                        <p className="text-sm text-gray-500 mb-2">{t('contractor.profile.noDoc')}</p>
+                                        {isEditing && (
+                                            <label className="cursor-pointer">
+                                                <span className="text-sm font-medium text-blue-600 hover:text-blue-700">{t('contractor.profile.uploadPdf')}</span>
+                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'visura_camerale')} />
+                                            </label>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.uploadBrochure')}</label>
+
+                                {getDocument('presentation') ? (
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-green-100 p-2 rounded-full">
+                                                <CheckCircle className="h-5 w-5 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                                                    {getDocument('presentation').file_name}
+                                                </p>
+                                                <a
+                                                    href={`${BACKEND_URL}/storage/${getDocument('presentation').file_path}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-blue-600 hover:underline flex items-center mt-0.5"
+                                                >
+                                                    <Eye className="h-3 w-3 mr-1" /> {t('contractor.profile.viewDoc')}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {isEditing && (
+                                            <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
+                                                {t('contractor.profile.replace')}
+                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'presentation')} />
+                                            </label>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center ${isEditing ? 'border-gray-300 hover:border-blue-400 bg-gray-50 cursor-pointer' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+                                        <FileText className="h-10 w-10 text-gray-400 mb-2" />
+                                        <p className="text-sm text-gray-500 mb-2">{t('contractor.profile.noFile')}</p>
+                                        {isEditing && (
+                                            <label className="cursor-pointer">
+                                                <span className="text-sm font-medium text-blue-600 hover:text-blue-700">{t('contractor.profile.uploadPdf')}</span>
+                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'presentation')} />
+                                            </label>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                     </CardContent>

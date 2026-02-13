@@ -21,9 +21,7 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
     const links = [
         { to: '/owner', icon: LayoutDashboard, label: t('owner.sidebar.dashboard'), end: true },
         { to: '/owner/users', icon: Users, label: t('owner.sidebar.userManagement') },
-        { to: '/owner/tenders', icon: FileText, label: t('owner.sidebar.tenderOversight') },
         { to: '/owner/revenue', icon: DollarSign, label: t('owner.sidebar.revenue') },
-        { to: '/owner/audit', icon: Shield, label: t('owner.sidebar.audit') },
         { to: '/owner/config', icon: Settings, label: t('owner.sidebar.configuration') },
         { to: '/owner/notifications', icon: Bell, label: t('owner.sidebar.notifications') },
     ];

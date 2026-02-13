@@ -1,68 +1,37 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import React, { useEffect } from 'react';
+import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Bell, FileCheck, MessageSquare, Award, FileText, AlertCircle } from 'lucide-react';
+import { Bell, FileCheck, MessageSquare, Award, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { useNotifications } from '../context/NotificationContext';
+import { Button } from '../components/ui/Button';
 
 const Notifications = () => {
-    const [notifications] = useState([
-        {
-            id: 1,
-            type: 'bid',
-            icon: FileCheck,
-            title: 'New Bid Received',
-            message: 'Giovanni Rossi submitted a bid for Roof Renovation - Via Roma 5',
-            time: '2 hours ago',
-            read: false,
-            color: 'text-blue-600',
-            bg: 'bg-blue-50'
-        },
-        {
-            id: 2,
-            type: 'tender',
-            icon: FileText,
-            title: 'Tender Published',
-            message: 'Your tender "Facade Painting" has been published successfully',
-            time: '5 hours ago',
-            read: false,
-            color: 'text-green-600',
-            bg: 'bg-green-50'
-        },
-        {
-            id: 3,
-            type: 'message',
-            icon: MessageSquare,
-            title: 'New Message',
-            message: 'Maria Bianchi sent you a message regarding Elevator Maintenance',
-            time: '1 day ago',
-            read: true,
-            color: 'text-purple-600',
-            bg: 'bg-purple-50'
-        },
-        {
-            id: 4,
-            type: 'award',
-            icon: Award,
-            title: 'Tender Awarded',
-            message: 'Garden Maintenance has been awarded to Luca Verdi',
-            time: '2 days ago',
-            read: true,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50'
-        },
-        {
-            id: 5,
-            type: 'urgent',
-            icon: AlertCircle,
-            title: 'Deadline Approaching',
-            message: 'Tender "Elevator Maintenance - Via Milano 12" deadline is in 2 days',
-            time: '3 days ago',
-            read: true,
-            color: 'text-red-600',
-            bg: 'bg-red-50'
-        },
-    ]);
+    const { notifications, unreadCount, markAsRead, markAllAsRead, refresh } = useNotifications();
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    useEffect(() => {
+        refresh();
+    }, []);
+
+    const getIcon = (type) => {
+        switch (type) {
+            case 'bid_received': return FileCheck;
+            case 'tender_published': return FileText;
+            case 'message': return MessageSquare;
+            case 'tender_awarded': return Award;
+            case 'deadline_approaching': return AlertCircle;
+            default: return Bell;
+        }
+    };
+
+    const getColors = (type) => {
+        switch (type) {
+            case 'bid_received': return { text: 'text-blue-600', bg: 'bg-blue-50' };
+            case 'tender_published': return { text: 'text-green-600', bg: 'bg-green-50' };
+            case 'tender_awarded': return { text: 'text-orange-600', bg: 'bg-orange-50' };
+            case 'deadline_approaching': return { text: 'text-red-600', bg: 'bg-red-50' };
+            default: return { text: 'text-gray-600', bg: 'bg-gray-50' };
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -74,44 +43,60 @@ const Notifications = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Badge variant="default" className="bg-blue-600">
-                        <Bell className="h-3 w-3 mr-1" /> {unreadCount} New
-                    </Badge>
+                    {unreadCount > 0 && (
+                        <>
+                            <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                                <CheckCircle className="h-4 w-4 mr-1" /> Mark all as read
+                            </Button>
+                            <Badge variant="default" className="bg-blue-600">
+                                <Bell className="h-3 w-3 mr-1" /> {unreadCount} New
+                            </Badge>
+                        </>
+                    )}
                 </div>
             </div>
 
             {/* Notifications List */}
             <div className="space-y-3">
-                {notifications.map((notification) => (
-                    <Card
-                        key={notification.id}
-                        className={`hover:shadow-md transition-all cursor-pointer ${!notification.read ? 'border-l-4 border-l-blue-600' : ''}`}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-start gap-4">
-                                <div className={`h-12 w-12 ${notification.bg} rounded-lg flex items-center justify-center shrink-0`}>
-                                    <notification.icon className={`h-6 w-6 ${notification.color}`} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between mb-1">
-                                        <h3 className={`font-semibold text-gray-900 ${!notification.read ? 'font-bold' : ''}`}>
-                                            {notification.title}
-                                        </h3>
-                                        <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                                            {notification.time}
-                                        </span>
+                {notifications.map((notification) => {
+                    const data = notification.data || {};
+                    const type = data.type || 'system';
+                    const Icon = getIcon(type);
+                    const colors = getColors(type);
+                    const isRead = !!notification.read_at;
+
+                    return (
+                        <Card
+                            key={notification.id}
+                            className={`hover:shadow-md transition-all cursor-pointer ${!isRead ? 'border-l-4 border-l-blue-600' : ''}`}
+                            onClick={() => !isRead && markAsRead(notification.id)}
+                        >
+                            <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                    <div className={`h-12 w-12 ${colors.bg} rounded-lg flex items-center justify-center shrink-0`}>
+                                        <Icon className={`h-6 w-6 ${colors.text}`} />
                                     </div>
-                                    <p className={`text-sm ${!notification.read ? 'text-gray-900' : 'text-gray-600'}`}>
-                                        {notification.message}
-                                    </p>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-1">
+                                            <h3 className={`font-semibold text-gray-900 ${!isRead ? 'font-bold' : ''}`}>
+                                                {data.title || 'Notification'}
+                                            </h3>
+                                            <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                                {new Date(notification.created_at).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className={`text-sm ${!isRead ? 'text-gray-900' : 'text-gray-600'}`}>
+                                            {data.message || ''}
+                                        </p>
+                                    </div>
+                                    {!isRead && (
+                                        <div className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-2" title="Unread"></div>
+                                    )}
                                 </div>
-                                {!notification.read && (
-                                    <div className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-2"></div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
 
             {notifications.length === 0 && (

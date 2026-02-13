@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import api from '../../services/backendApi';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
@@ -17,20 +18,27 @@ const AuditLog = () => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Mock Audit Logs
-    const logs = [
-        { id: 'LOG-001', action: 'System Config Update', user: 'Platform Owner', details: 'Changed Success Fee from 2.5% to 3.0%', ip: '192.168.1.1', timestamp: '2026-01-30 10:45:00' },
-        { id: 'LOG-002', action: 'User Suspension', user: 'Platform Owner', details: 'Suspended user: Condominio Milano (ID: 3)', ip: '192.168.1.1', timestamp: '2026-01-29 16:30:22' },
-        { id: 'LOG-003', action: 'Tender Force Close', user: 'Platform Owner', details: 'Closed tender #104 due to policy violation', ip: '192.168.1.1', timestamp: '2026-01-29 09:15:10' },
-        { id: 'LOG-004', action: 'Login Success', user: 'Admin User', details: 'Successful login', ip: '203.0.113.45', timestamp: '2026-01-29 08:00:05' },
-        { id: 'LOG-005', action: 'Contractor Verification', user: 'Platform Owner', details: 'Verified company: Rossi Costruzioni', ip: '192.168.1.1', timestamp: '2026-01-28 14:20:00' },
-    ];
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredLogs = logs.filter(log =>
-        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.details.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const fetchLogs = async () => {
+        try {
+            setLoading(true);
+            const data = await api.getAuditLogs({ search: searchTerm });
+            setLogs(data.data || []);
+        } catch (error) {
+            console.error('Failed to fetch audit logs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const debounce = setTimeout(() => {
+            fetchLogs();
+        }, 500);
+        return () => clearTimeout(debounce);
+    }, [searchTerm]);
 
     return (
         <div className="space-y-6">
@@ -69,17 +77,17 @@ const AuditLog = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredLogs.map((log) => (
+                            {logs.map((log) => (
                                 <TableRow key={log.id}>
-                                    <TableCell className="font-mono text-xs text-gray-500">{log.timestamp}</TableCell>
+                                    <TableCell className="font-mono text-xs text-gray-500">{new Date(log.created_at).toLocaleString()}</TableCell>
                                     <TableCell className="font-medium">{log.action}</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="bg-gray-50">{log.user}</Badge>
+                                        <Badge variant="outline" className="bg-gray-50">{log.user?.name || 'System'}</Badge>
                                     </TableCell>
                                     <TableCell className="max-w-md truncate" title={log.details}>
                                         {log.details}
                                     </TableCell>
-                                    <TableCell className="text-xs text-gray-500">{log.ip}</TableCell>
+                                    <TableCell className="text-xs text-gray-500">{log.ip_address}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

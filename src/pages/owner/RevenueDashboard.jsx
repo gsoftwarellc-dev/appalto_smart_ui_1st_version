@@ -1,41 +1,80 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { DollarSign, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { DollarSign, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import api from '../../services/backendApi';
+import StripeConfigModal from './components/StripeConfigModal'; // Import the new modal
 
 const RevenueDashboard = ({ embedded = false }) => {
     const { t } = useTranslation();
-    // Mock Data
-    const revenueData = [
-        { month: 'Jan', credits: 4000, fees: 2400 },
-        { month: 'Feb', credits: 3000, fees: 1398 },
-        { month: 'Mar', credits: 2000, fees: 9800 },
-        { month: 'Apr', credits: 2780, fees: 3908 },
-        { month: 'May', credits: 1890, fees: 4800 },
-        { month: 'Jun', credits: 2390, fees: 3800 },
-        { month: 'Jul', credits: 3490, fees: 4300 },
-    ];
+    const [revenueData, setRevenueData] = useState([]);
+    const [transactionHistory, setTransactionHistory] = useState([]);
+    const [stats, setStats] = useState({
+        total_revenue: 0,
+        credit_sales: 0,
+        success_fees: 0,
+        pending_payments: 0,
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isStripeModalOpen, setIsStripeModalOpen] = useState(false); // State for modal
 
-    const transactionHistory = [
-        { id: 'TXN-1234', user: 'Rossi Costruzioni', type: 'Credit Purchase', amount: '€500.00', status: 'Completed', date: 'Today, 10:23 AM' },
-        { id: 'TXN-1235', user: 'Impianti Verdi', type: 'Success Fee', amount: '€1,250.00', status: 'Completed', date: 'Yesterday, 4:15 PM' },
-        { id: 'TXN-1236', user: 'Mario Rossi Ditta', type: 'Credit Purchase', amount: '€50.00', status: 'Pending', date: 'Yesterday, 9:00 AM' },
-        { id: 'TXN-1237', user: 'Studio Tecnico Bianchi', type: 'Subscription', amount: '€0.00', status: 'Completed', date: 'Jan 28, 2026' },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await api.getOwnerRevenue();
+                setRevenueData(data.chart_data || []);
+                setTransactionHistory(data.recent_transactions || []);
+                if (data.stats) {
+                    setStats(data.stats);
+                }
+            } catch (err) {
+                console.error("Failed to fetch revenue data", err);
+                setError("Failed to load revenue data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-48">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-red-500 text-center py-4">{error}</div>;
+    }
 
     return (
         <div className="space-y-6">
             {!embedded && (
-                <div className="flex flex-col gap-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.revenue.title')}</h2>
-                    <p className="text-gray-500">{t('owner.revenue.subtitle')}</p>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.revenue.title')}</h2>
+                        <p className="text-gray-500">{t('owner.revenue.subtitle')}</p>
+                    </div>
+                    <Button onClick={() => setIsStripeModalOpen(true)} variant="outline" className="gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        {t('owner.revenue.paymentSettings')}
+                    </Button>
                 </div>
             )}
 
+            <StripeConfigModal
+                isOpen={isStripeModalOpen}
+                onClose={() => setIsStripeModalOpen(false)}
+            />
+
             {/* KPI Cards */}
-            <div className={`grid gap-4 ${embedded ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
+            <div className={`grid gap-4 ${embedded ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
                 {!embedded && ((
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -43,9 +82,9 @@ const RevenueDashboard = ({ embedded = false }) => {
                             <DollarSign className="h-4 w-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">€45,231.00</div>
+                            <div className="text-2xl font-bold">€{typeof stats.total_revenue === 'number' ? stats.total_revenue.toFixed(2) : stats.total_revenue}</div>
                             <div className="flex items-center text-xs text-green-600 mt-1">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> +20.1% {t('owner.revenue.lastYear')}
+                                <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.revenue.lastYear')}
                             </div>
                         </CardContent>
                     </Card>
@@ -56,9 +95,9 @@ const RevenueDashboard = ({ embedded = false }) => {
                         <CreditCard className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€12,450.00</div>
+                        <div className="text-2xl font-bold">€{typeof stats.credit_sales === 'number' ? stats.credit_sales.toFixed(2) : stats.credit_sales}</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" /> +4.5% {t('owner.dashboard.lastMonth')}
+                            <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.dashboard.lastMonth')}
                         </div>
                     </CardContent>
                 </Card>
@@ -68,21 +107,9 @@ const RevenueDashboard = ({ embedded = false }) => {
                         <TrendingUp className="h-4 w-4 text-purple-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€32,781.00</div>
+                        <div className="text-2xl font-bold">€{typeof stats.success_fees === 'number' ? stats.success_fees.toFixed(2) : stats.success_fees}</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" /> +12.3% {t('owner.dashboard.lastMonth')}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">{t('owner.revenue.pendingPayments')}</CardTitle>
-                        <Activity className="h-4 w-4 text-amber-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">€3,450.00</div>
-                        <div className="flex items-center text-xs text-red-600 mt-1">
-                            <ArrowDownRight className="h-3 w-3 mr-1" /> 7 {t('owner.revenue.overdueInvoices')}
+                            <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.dashboard.lastMonth')}
                         </div>
                     </CardContent>
                 </Card>
@@ -102,8 +129,8 @@ const RevenueDashboard = ({ embedded = false }) => {
                                 <YAxis />
                                 <Tooltip />
                                 <Legend />
-                                <Bar dataKey="credits" name="Credit Sales" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="fees" name="Success Fees" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="credits" name={t('owner.revenue.creditSales')} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="fees" name={t('owner.revenue.successFees')} fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -111,18 +138,36 @@ const RevenueDashboard = ({ embedded = false }) => {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('owner.revenue.monthlyGrowthTrend')}</CardTitle>
+                        <CardTitle>{t('owner.revenue.breakdown')}</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={revenueData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="month" />
-                                <YAxis />
-                                <Tooltip />
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: t('owner.revenue.totalRevenueYtd'), value: parseFloat(stats.total_revenue) || 0, color: '#10b981' },
+                                        { name: t('owner.revenue.creditSales'), value: parseFloat(stats.credit_sales) || 0, color: '#3b82f6' },
+                                        { name: t('owner.revenue.successFees'), value: parseFloat(stats.success_fees) || 0, color: '#8b5cf6' }
+                                    ].filter(item => item.value > 0)}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    label={({ name, value }) => `${name}: €${value.toFixed(2)}`}
+                                >
+                                    {[
+                                        { name: t('owner.revenue.totalRevenueYtd'), value: parseFloat(stats.total_revenue) || 0, color: '#10b981' },
+                                        { name: t('owner.revenue.creditSales'), value: parseFloat(stats.credit_sales) || 0, color: '#3b82f6' },
+                                        { name: t('owner.revenue.successFees'), value: parseFloat(stats.success_fees) || 0, color: '#8b5cf6' }
+                                    ].filter(item => item.value > 0).map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => `€${value.toFixed(2)}`} />
                                 <Legend />
-                                <Line type="monotone" dataKey="fees" stroke="#10b981" strokeWidth={2} />
-                            </LineChart>
+                            </PieChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
@@ -138,29 +183,33 @@ const RevenueDashboard = ({ embedded = false }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {transactionHistory.map((txn) => (
-                            <div key={txn.id} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                                <div className="flex items-center gap-4">
-                                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.type === 'Credit Purchase' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-                                        }`}>
-                                        <DollarSign className="h-5 w-5" />
+                        {transactionHistory.length > 0 ? (
+                            transactionHistory.map((txn) => (
+                                <div key={txn.id} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.type === 'Credit Purchase' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
+                                            }`}>
+                                            <DollarSign className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">{txn.user}</p>
+                                            <p className="text-xs text-gray-500">{txn.type} • {txn.id}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">{txn.user}</p>
-                                        <p className="text-xs text-gray-500">{txn.type} • {txn.id}</p>
+                                    <div className="text-right">
+                                        <p className="text-sm font-bold text-gray-900">{txn.amount}</p>
+                                        <p className={`text-xs ${txn.status === 'Completed' ? 'text-green-600' : 'text-amber-600'
+                                            }`}>{txn.status}</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-bold text-gray-900">{txn.amount}</p>
-                                    <p className={`text-xs ${txn.status === 'Completed' ? 'text-green-600' : 'text-amber-600'
-                                        }`}>{txn.status}</p>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center py-4">{t('owner.revenue.noTransactions')}</p>
+                        )}
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 };
 

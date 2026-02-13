@@ -1,40 +1,86 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Search, MapPin, Calendar, Clock, Filter, X, Lock } from 'lucide-react';
+import { Search, MapPin, Calendar, Clock, Filter, X, Lock, Loader2 } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
-import CountdownTimer from '../../components/ui/CountdownTimer';
+import BackendApiService from '../../services/backendApi';
+// import { useDebounce } from '../../hooks/useDebounce'; // Removed
+
+// Simple debounce impl since I don't know if hook exists
+const useDebounceValue = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+};
 
 const ActiveTenders = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
 
-    // Mock Data
-    const allTenders = [
-        { id: 1, title: "Roof Renovation - Via Roma 5", description: "Complete roof replacement for 5-story building.", location: "Rome", category: "Construction", budget: 20000, deadline: "2026-02-15", status: "Open", isUnlocked: true },
-        { id: 4, title: "Electrical Upgrade (Partial Info)", description: "Electrical upgrade work in Naples area. Purchase credits to view full details.", location: "Naples", category: "Electrical", budget: 5000, deadline: "2026-03-01", status: "Open", isUnlocked: false },
-        { id: 6, title: "Plumbing Fix (Partial Info)", description: "Urgent plumbing repair needed. Purchase credits to participate.", location: "Turin", category: "Plumbing", budget: 3000, deadline: "2026-01-30", status: "Urgent", isUnlocked: false },
-        { id: 7, title: "Facade Painting - Florence", description: "Painting of historical building facade.", location: "Florence", category: "Painting", budget: 12000, deadline: "2026-02-20", status: "Open", isUnlocked: true },
-        { id: 8, title: "HVAC Maintenance (Partial Info)", description: "Scheduled maintenance for commercial property.", location: "Rome", category: "HVAC", budget: 8000, deadline: "2026-02-10", status: "Urgent", isUnlocked: false },
-    ];
+    const [tenders, setTenders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [locations, setLocations] = useState(['All']); // Dynamically loaded? Or static list for now?
 
-    // Get unique locations for filter
-    const locations = ['All', ...new Set(allTenders.map(t => t.location))];
-    const statuses = ['All', 'Open', 'Urgent'];
+    const debouncedSearch = useDebounceValue(searchTerm, 500);
 
-    const filteredTenders = allTenders.filter(tender => {
-        const matchesSearch = tender.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tender.location.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesLocation = locationFilter === 'All' || tender.location === locationFilter;
-        const matchesStatus = statusFilter === 'All' || tender.status === statusFilter;
+    const fetchTenders = useCallback(async () => {
+        setLoading(true);
+        try {
+            const filters = {
+                search: debouncedSearch,
+                location: locationFilter,
+                status: statusFilter
+            };
+            const data = await BackendApiService.getTenders(filters);
+            setTenders(data);
 
-        return matchesSearch && matchesLocation && matchesStatus;
-    });
+            // Extract locations if we want dynamic list (or just keep static 'All' + common cities)
+            // For now let's just keep 'All' and maybe add unique from data if we want, 
+            // but server filtering implies we don't have all data.
+            // Let's stick to a static list or fetch locations separately. For MVP, input text or static list.
+        } catch (err) {
+            console.error("Failed to load tenders", err);
+            setTenders([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [debouncedSearch, locationFilter, statusFilter]);
+
+    useEffect(() => {
+        fetchTenders();
+    }, [fetchTenders]);
+
+
+    const handleUnlock = async (e, tender) => {
+        e.preventDefault();
+
+        try {
+            await BackendApiService.unlockTender(tender.id);
+            // Update local state to reflect unlock
+            setTenders(prev => prev.map(t =>
+                t.id === tender.id ? { ...t, isUnlocked: true } : t
+            ));
+            alert(t('contractor.tenders.unlockSuccess'));
+        } catch (err) {
+            console.error("Failed to unlock tender", err);
+            if (err.response && err.response.status === 402) {
+                alert(t('contractor.tenders.insufficientCredits'));
+            } else {
+                alert(t('contractor.tenders.unlockError'));
+            }
+        }
+    };
 
     const clearFilters = () => {
         setSearchTerm('');
@@ -43,6 +89,11 @@ const ActiveTenders = () => {
     };
 
     const hasActiveFilters = searchTerm !== '' || locationFilter !== 'All' || statusFilter !== 'All';
+
+    // Cities hardcoded for now or we can make it an input
+    const availableLocations = ['All', 'Rome', 'Milan', 'Naples', 'Turin'];
+
+    const statuses = ['All', 'Open', 'Urgent'];
 
     // Helper for translating status
     const getStatusLabel = (status) => {
@@ -91,7 +142,7 @@ const ActiveTenders = () => {
                                     value={locationFilter}
                                     onChange={(e) => setLocationFilter(e.target.value)}
                                 >
-                                    {locations.map(loc => (
+                                    {availableLocations.map(loc => (
                                         <option key={loc} value={loc}>{loc === 'All' ? t('contractor.tenders.allLocations') : loc}</option>
                                     ))}
                                 </select>
@@ -113,66 +164,128 @@ const ActiveTenders = () => {
                                 </button>
                             ))}
                         </div>
+
                     </div>
                 </CardContent>
             </Card>
 
-            <div className="grid gap-4">
-                {filteredTenders.map((tender) => (
-                    <Card key={tender.id} className="hover:shadow-md transition-shadow group">
-                        <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row justify-between gap-4">
-                                <div className="space-y-2 flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{tender.title}</h3>
-                                        {!tender.isUnlocked && <Badge variant="outline" className="text-gray-500 border-gray-300"><Lock className="w-3 h-3 mr-1" /> {t('contractor.tenders.locked')}</Badge>}
-                                        {tender.status === 'Urgent' && <Badge variant="destructive" className="animate-pulse">{t('contractor.tenders.urgent')}</Badge>}
-                                        {tender.status === 'Open' && <Badge variant="secondary">{t('contractor.tenders.open')}</Badge>}
-                                    </div>
-                                    <p className={`text-gray-600 line-clamp-2 max-w-2xl ${!tender.isUnlocked ? 'italic text-gray-500' : ''}`}>
-                                        {tender.description}
-                                    </p>
+            {loading ? (
+                <div className="flex justify-center p-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                </div>
+            ) : (
+                <div className="grid gap-4">
+                    {tenders.map((tender) => (
+                        <Card
+                            key={tender.id}
+                            className={`group relative transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-l-4 overflow-hidden
+                                ${tender.isUnlocked
+                                    ? 'cursor-pointer border-l-blue-500 hover:border-l-blue-600'
+                                    : 'border-l-gray-300 bg-gray-50/50'
+                                }
+                                ${tender.status === 'Urgent' && tender.isUnlocked ? 'border-l-red-500 hover:border-l-red-600' : ''}
+                            `}
+                            onClick={(e) => {
+                                if (tender.isUnlocked) {
+                                    navigate(`/contractor/tenders/${tender.id}`);
+                                }
+                            }}
+                        >
+                            {/* Colorful background gradient on hover for unlocked */}
+                            {tender.isUnlocked && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                            )}
 
-                                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 pt-3">
-                                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${!tender.isUnlocked ? 'bg-gray-100 blur-sm select-none' : 'bg-gray-100'}`}>
-                                            <MapPin className="h-3.5 w-3.5" />
-                                            {tender.isUnlocked ? tender.location : t('contractor.tenders.hiddenLocation')}
-                                        </span>
-                                        <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
-                                            <Calendar className="h-3.5 w-3.5" />
-                                            {t('contractor.tenders.deadline')}: {tender.deadline}
-                                        </span>
-                                        <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full">
-                                            <span className="font-semibold">{t('contractor.tenders.budget')}:</span> €{tender.budget}
-                                        </span>
+                            <CardContent className="p-6 relative z-10">
+                                <div className="flex flex-col md:flex-row justify-between gap-6">
+                                    <div className="space-y-3 flex-1">
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            <h3 className={`text-xl font-bold transition-colors ${tender.isUnlocked ? 'text-gray-900 group-hover:text-blue-700' : 'text-gray-700'}`}>
+                                                {tender.title}
+                                            </h3>
+
+                                            {/* Status Badges */}
+                                            {tender.status === 'Urgent' && (
+                                                <Badge variant="destructive" className="animate-pulse shadow-sm">
+                                                    {t('contractor.tenders.urgent')}
+                                                </Badge>
+                                            )}
+                                            {tender.status === 'Open' && (
+                                                <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">
+                                                    {t('contractor.tenders.open')}
+                                                </Badge>
+                                            )}
+                                            {!tender.isUnlocked && (
+                                                <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-300">
+                                                    <Lock className="w-3 h-3 mr-1" /> {t('contractor.tenders.locked')}
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        <p className={`text-gray-600 line-clamp-2 ${!tender.isUnlocked ? 'italic text-gray-500 blur-[0.5px]' : ''}`}>
+                                            {tender.description}
+                                        </p>
+
+                                        <div className="flex flex-wrap gap-4 pt-2">
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600 bg-gray-100/80 px-3 py-1.5 rounded-full border border-gray-100 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                                <MapPin className="h-4 w-4 text-blue-500" />
+                                                <span className="font-medium">{tender.location}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600 bg-gray-100/80 px-3 py-1.5 rounded-full border border-gray-100 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                                <Calendar className="h-4 w-4 text-orange-500" />
+                                                <span>{t('contractor.tenders.deadline')}: <span className="font-medium">{tender.deadline?.split('T')[0]}</span></span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-900 bg-green-50 px-3 py-1.5 rounded-full border border-green-100 group-hover:bg-green-100 transition-all">
+                                                <span className="text-green-600 font-bold">€</span>
+                                                <span className="font-bold">{tender.budget}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Area */}
+                                    <div className="flex flex-col justify-center min-w-[140px] pl-4 md:border-l md:border-gray-100">
+                                        {tender.isUnlocked ? (
+                                            <div className="flex items-center justify-end text-blue-600 font-medium group-hover:translate-x-1 transition-transform">
+                                                {t('contractor.tenders.viewDetails')}
+                                                <Loader2 className="ml-2 h-4 w-4 opacity-0" /> {/* Hidden placeholder to keep layout stable if needed, or better arrow */}
+                                                <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                size="lg"
+                                                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md hover:shadow-lg transition-all"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleUnlock(e, tender);
+                                                }}
+                                            >
+                                                <Lock className="w-4 h-4 mr-2" />
+                                                {t('contractor.tenders.unlockButton')}
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    ))}
 
-                                <div className="flex flex-col justify-center min-w-[140px]">
-                                    <Button asChild={tender.isUnlocked} size="lg" className={`w-full ${!tender.isUnlocked ? 'bg-amber-600 hover:bg-amber-700' : ''}`}>
-                                        <Link to={`/contractor/tenders/${tender.id}`}>
-                                            {tender.isUnlocked ? t('contractor.tenders.viewDetails') : t('contractor.tenders.unlockDetails')}
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-
-                {filteredTenders.length === 0 && (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <Filter className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-gray-900">{t('contractor.tenders.noTenders')}</h3>
-                        <p className="text-gray-500">{t('contractor.tenders.tryAdjusting')}</p>
-                        <Button variant="link" onClick={clearFilters} className="mt-2 text-blue-600">
-                            {t('contractor.tenders.clearFilters')}
-                        </Button>
-                    </div>
-                )}
-            </div>
+                    {tenders.length === 0 && (
+                        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                            <Filter className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                            <h3 className="text-lg font-medium text-gray-900">{t('contractor.tenders.noTenders')}</h3>
+                            <p className="text-gray-500">{t('contractor.tenders.tryAdjusting')}</p>
+                            <Button variant="link" onClick={clearFilters} className="mt-2 text-blue-600">
+                                {t('contractor.tenders.clearFilters')}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
 
 export default ActiveTenders;
+

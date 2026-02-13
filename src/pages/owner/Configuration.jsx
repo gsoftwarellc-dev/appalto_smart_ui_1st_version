@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import api from '../../services/backendApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -10,29 +11,50 @@ import { Switch } from '../../components/ui/Switch';
 const Configuration = () => {
     const { t } = useTranslation();
 
-    // Mock Configuration State
+    // Default Configuration State
     const [config, setConfig] = useState({
         creditPriceBasic: 50,
         creditPricePro: 120,
         creditPriceEnterprise: 300,
         successFeePercent: 3.0,
         tenderDurationDays: 15,
-        minBudgetValues: [0, 50000, 100000, 250000],
         autoApproveClients: false,
     });
 
     const [isSaving, setIsSaving] = useState(false);
 
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const data = await api.getSystemConfig();
+                if (data && Object.keys(data).length > 0) {
+                    // Normalize boolean/number strings from DB
+                    const formatted = { ...data };
+                    if (formatted.autoApproveClients) formatted.autoApproveClients = formatted.autoApproveClients === '1' || formatted.autoApproveClients === 'true';
+                    setConfig(prev => ({ ...prev, ...formatted }));
+                }
+            } catch (error) {
+                console.error('Failed to fetch system config:', error);
+            }
+        };
+        fetchConfig();
+    }, []);
+
     const handleChange = (key, value) => {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        setTimeout(() => {
+        try {
+            await api.updateSystemConfig(config);
+            alert(t('owner.configuration.saveSuccess') || 'System configuration updated successfully.');
+        } catch (error) {
+            console.error('Failed to update config:', error);
+            alert(t('owner.configuration.saveError') || 'Failed to update configuration.');
+        } finally {
             setIsSaving(false);
-            alert('System configuration updated successfully.');
-        }, 1500);
+        }
     };
 
     return (

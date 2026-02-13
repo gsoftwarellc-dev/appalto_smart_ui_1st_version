@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockLogin } from '../services/api';
+import BackendApiService from '../services/backendApi';
 
 const AuthContext = createContext(null);
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
     // Check for existing session on mount
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem('appalto_user');
         const token = localStorage.getItem('auth_token');
 
         if (storedUser && token) {
@@ -20,32 +20,38 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (email, password, role) => {
         try {
-            const response = await mockLogin(email, password);
-            const { user, token } = response;
-
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('user', JSON.stringify(user));
+            const user = await BackendApiService.login(email, password, role);
 
             setUser(user);
             setIsAuthenticated(true);
             return { success: true };
         } catch (error) {
-            return { success: false, message: error.message };
+            console.error('Login error:', error);
+            return {
+                success: false,
+                message: error.response?.data?.message || error.message || 'Login failed'
+            };
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        setUser(null);
-        setIsAuthenticated(false);
+    const logout = async () => {
+        try {
+            await BackendApiService.logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('appalto_user');
+            setUser(null);
+            setIsAuthenticated(false);
+        }
     };
 
     const updateUser = (userData) => {
         setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('appalto_user', JSON.stringify(userData));
     };
 
     return (

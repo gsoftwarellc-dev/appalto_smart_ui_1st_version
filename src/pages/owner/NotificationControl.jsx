@@ -1,102 +1,115 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { Mail, Bell, Edit, Send } from 'lucide-react';
-import { Separator } from '../../components/ui/Separator';
+import { Button } from '../../components/ui/Button';
+import { Bell, FileCheck, MessageSquare, Award, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { useNotifications } from '../../context/NotificationContext';
 
 const NotificationControl = () => {
     const { t } = useTranslation();
+    const { notifications, unreadCount, markAsRead, markAllAsRead, refresh } = useNotifications();
 
-    const templates = [
-        { id: 1, name: 'Welcome Email (Contractor)', subject: 'Welcome to Appalto Smart!', status: 'Active', updated: 'Jan 10, 2026' },
-        { id: 2, name: 'Tender Invitation', subject: 'New Tender Opportunity in [Area]', status: 'Active', updated: 'Jan 12, 2026' },
-        { id: 3, name: 'Payment Reminder', subject: 'Action Required: Pending Success Fee', status: 'Active', updated: 'Jan 05, 2026' },
-        { id: 4, name: 'Award Notification', subject: 'Congratulations! You have been awarded [Project]', status: 'Active', updated: 'Jan 15, 2026' },
-        { id: 5, name: 'Account Suspension', subject: 'Important Notice Regarding Your Account', status: 'Inactive', updated: 'Dec 20, 2025' },
-    ];
+    useEffect(() => {
+        refresh();
+    }, []);
+
+    const getIcon = (type) => {
+        switch (type) {
+            case 'bid_received': return FileCheck;
+            case 'tender_published': return FileText;
+            case 'message': return MessageSquare;
+            case 'tender_awarded': return Award;
+            case 'deadline_approaching': return AlertCircle;
+            default: return Bell;
+        }
+    };
+
+    const getColors = (type) => {
+        switch (type) {
+            case 'bid_received': return { text: 'text-blue-600', bg: 'bg-blue-50' };
+            case 'tender_published': return { text: 'text-green-600', bg: 'bg-green-50' };
+            case 'tender_awarded': return { text: 'text-orange-600', bg: 'bg-orange-50' };
+            case 'deadline_approaching': return { text: 'text-red-600', bg: 'bg-red-50' };
+            default: return { text: 'text-gray-600', bg: 'bg-gray-50' };
+        }
+    };
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.notifications.title')}</h2>
-                <p className="text-gray-500">{t('owner.notifications.subtitle')}</p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card className="col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Mail className="h-5 w-5 text-blue-600" /> {t('owner.notifications.emailTemplates')}
-                        </CardTitle>
-                        <CardDescription>{t('owner.notifications.emailTemplatesDesc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {templates.map((template) => (
-                                <div key={template.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="font-semibold text-gray-900">{template.name}</h4>
-                                            <Badge variant={template.status === 'Active' ? 'success' : 'secondary'}>{template.status}</Badge>
-                                        </div>
-                                        <p className="text-sm text-gray-500">{t('owner.notifications.subject')}: {template.subject}</p>
-                                        <p className="text-xs text-gray-400">{t('owner.notifications.lastUpdated')}: {template.updated}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" variant="outline">
-                                            <Edit className="h-4 w-4 mr-2" /> {t('owner.notifications.edit')}
-                                        </Button>
-                                        <Button size="sm" variant="ghost" title="Send Test">
-                                            <Send className="h-4 w-4 text-gray-400" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Bell className="h-5 w-5 text-amber-600" /> {t('owner.notifications.systemAlerts')}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{t('owner.notifications.maintenanceMode')}</span>
-                                <Button size="sm" variant="outline" className="text-red-600 border-red-200">Inactive</Button>
-                            </div>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{t('owner.notifications.newUserAlerts')}</span>
-                                <Button size="sm" variant="outline" className="text-green-600 border-green-200">Active</Button>
-                            </div>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{t('owner.notifications.riskAlerts')}</span>
-                                <Button size="sm" variant="outline" className="text-green-600 border-green-200">Active</Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-blue-50 border-blue-100">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium text-blue-900">{t('owner.notifications.emailStatus')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
-                                <span className="font-bold text-blue-800">{t('owner.notifications.operational')}</span>
-                            </div>
-                            <p className="text-xs text-blue-700">99.9% delivery rate in last 24h.</p>
-                        </CardContent>
-                    </Card>
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">{t('owner.notifications.title')}</h2>
+                    <p className="text-gray-500">
+                        {unreadCount > 0
+                            ? t('notifications.unreadCount', { count: unreadCount, defaultValue: `You have ${unreadCount} unread notifications` })
+                            : t('notifications.allCaughtUp', { defaultValue: 'All caught up!' })}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                        <>
+                            <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                                <CheckCircle className="h-4 w-4 mr-1" /> {t('notifications.markAllRead', { defaultValue: 'Mark all as read' })}
+                            </Button>
+                            <Badge variant="default" className="bg-blue-600">
+                                <Bell className="h-3 w-3 mr-1" /> {unreadCount} New
+                            </Badge>
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Notifications List */}
+            <div className="space-y-3">
+                {notifications.map((notification) => {
+                    const data = notification.data || {};
+                    const type = data.type || 'system';
+                    const Icon = getIcon(type);
+                    const colors = getColors(type);
+                    const isRead = !!notification.read_at;
+
+                    return (
+                        <Card
+                            key={notification.id}
+                            className={`hover:shadow-md transition-all cursor-pointer ${!isRead ? 'border-l-4 border-l-blue-600' : ''}`}
+                            onClick={() => !isRead && markAsRead(notification.id)}
+                        >
+                            <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                    <div className={`h-12 w-12 ${colors.bg} rounded-lg flex items-center justify-center shrink-0`}>
+                                        <Icon className={`h-6 w-6 ${colors.text}`} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-1">
+                                            <h3 className={`font-semibold text-gray-900 ${!isRead ? 'font-bold' : ''}`}>
+                                                {data.title || 'Notification'}
+                                            </h3>
+                                            <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                                {new Date(notification.created_at).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className={`text-sm ${!isRead ? 'text-gray-900' : 'text-gray-600'}`}>
+                                            {data.message || ''}
+                                        </p>
+                                    </div>
+                                    {!isRead && (
+                                        <div className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-2" title="Unread"></div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+
+            {notifications.length === 0 && (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900">{t('notifications.emptyTitle', { defaultValue: 'No notifications' })}</h3>
+                    <p className="text-gray-500">{t('notifications.emptyDesc', { defaultValue: "You're all caught up! Check back later." })}</p>
+                </div>
+            )}
         </div>
     );
 };

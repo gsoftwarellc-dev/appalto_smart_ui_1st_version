@@ -3,8 +3,10 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Search, Send, MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AdminMessages = () => {
+    const { t } = useTranslation();
     // Mock Contractor Threads
     const [threads, setThreads] = useState([
         { id: 1, contractor: "Giovanni Rossi", lastMessage: "Thank you for the update", time: "10:30 AM", unread: 2, avatar: "GR" },
@@ -53,9 +55,9 @@ const AdminMessages = () => {
             <div className="w-full md:w-80 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
+                        <h2 className="text-2xl font-bold tracking-tight">{t('admin.adminMessages.title')}</h2>
                         {totalUnread > 0 && (
-                            <span className="text-sm text-gray-500">{totalUnread} unread</span>
+                            <span className="text-sm text-gray-500">{totalUnread} {t('admin.adminMessages.unread')}</span>
                         )}
                     </div>
                     <Button size="icon" variant="ghost">
@@ -65,7 +67,7 @@ const AdminMessages = () => {
 
                 <div className="relative">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search contractors..." className="pl-9 bg-white" />
+                    <Input placeholder={t('admin.adminMessages.searchPlaceholder')} className="pl-9 bg-white" />
                 </div>
 
                 <Card className="flex-1 overflow-hidden">
@@ -115,7 +117,7 @@ const AdminMessages = () => {
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900">{activeThread?.contractor}</h3>
-                            <span className="text-xs text-gray-400">Contractor</span>
+                            <span className="text-xs text-gray-400">{t('admin.adminMessages.contractorLabel')}</span>
                         </div>
                     </div>
 
@@ -124,8 +126,8 @@ const AdminMessages = () => {
                         {messages.map((msg) => (
                             <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'me'
-                                        ? 'bg-blue-600 text-white rounded-tr-none'
-                                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                                    ? 'bg-blue-600 text-white rounded-tr-none'
+                                    : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
                                     }`}>
                                     <p className="text-sm">{msg.text}</p>
                                     <span className={`text-[10px] block mt-1 text-right ${msg.sender === 'me' ? 'text-blue-100' : 'text-gray-400'}`}>
@@ -140,7 +142,7 @@ const AdminMessages = () => {
                     <div className="p-4 bg-white border-t border-gray-100">
                         <form onSubmit={handleSendMessage} className="flex gap-2">
                             <Input
-                                placeholder="Type a message..."
+                                placeholder={t('admin.adminMessages.typeMessage')}
                                 className="flex-1"
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}

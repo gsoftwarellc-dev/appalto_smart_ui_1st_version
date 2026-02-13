@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Search, Users, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Users, AlertTriangle, CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -13,43 +14,94 @@ import {
     TableHeader,
     TableRow,
 } from "../../components/ui/Table";
+import api from '../../services/backendApi';
 
 const UserManagement = () => {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('clients'); // 'clients' or 'contractors'
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'clients', 'contractors', 'owners'
     const [searchTerm, setSearchTerm] = useState('');
+    const [users, setUsers] = useState([]);
+    const [statistics, setStatistics] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Mock Data - Clients
-    const [clients, setClients] = useState([
-        { id: 1, name: "Condominio Roma 1", type: "Condominium Admin", email: "admin@roma1.com", status: "Active", tenders: 3 },
-        { id: 2, name: "Studio Tecnico Bianchi", type: "Delegated Technician", email: "tech@bianchi.it", status: "Active", tenders: 5 },
-        { id: 3, name: "Condominio Milano Central", type: "Condominium Admin", email: "admin@milano.it", status: "Suspended", tenders: 1 },
-    ]);
+    // Fetch users from API
+    useEffect(() => {
+        fetchUsers();
+        fetchStatistics();
+    }, [activeTab, searchTerm]);
 
-    // Mock Data - Contractors
-    const [contractors, setContractors] = useState([
-        { id: 101, name: "Rossi Costruzioni SRL", category: "General Construction", email: "info@rossi.it", verified: true, status: "Active", credits: 150 },
-        { id: 102, name: "Impianti Verdi SPA", category: "Electrical", email: "contact@verdi.it", verified: true, status: "Active", credits: 40 },
-        { id: 103, name: "Mario Rossi Ditta", category: "Plumbing", email: "mario@rossi.it", verified: false, status: "Pending", credits: 0 },
-    ]);
-
-    const handleAction = (id, listType, action) => {
-        const updater = listType === 'clients' ? setClients : setContractors;
-        updater(prev => prev.map(item => {
-            if (item.id === id) {
-                if (action === 'block') return { ...item, status: 'Suspended' };
-                if (action === 'activate') return { ...item, status: 'Active' };
-                if (action === 'verify') return { ...item, verified: true, status: 'Active' };
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            let role;
+            if (activeTab === 'contractors') {
+                role = 'contractor';
+            } else if (activeTab === 'clients') {
+                role = 'admin';
+            } else if (activeTab === 'owners') {
+                role = 'owner';
             }
-            return item;
-        }));
-        alert(`User ${action}ed successfully`);
+            // If activeTab is 'all', don't send role parameter to get all users
+            const params = {
+                ...(role && { role }),
+                ...(searchTerm && { search: searchTerm })
+            };
+            const response = await api.getUsers(params);
+            setUsers(response.data || response); // Handle pagination structure if needed
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            setError(err.response?.data?.message || 'Failed to fetch users');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const filteredList = (activeTab === 'clients' ? clients : contractors).filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const fetchStatistics = async () => {
+        try {
+            const response = await api.getUserStatistics();
+            setStatistics(response);
+        } catch (err) {
+            console.error('Error fetching statistics:', err);
+        }
+    };
+
+    const handleAction = async (id, action) => {
+        try {
+            if (action === 'verify') {
+                await api.verifyContractor(id);
+            } else if (action === 'block') {
+                await api.updateUserStatus(id, 'suspended');
+            } else if (action === 'activate') {
+                await api.updateUserStatus(id, 'active');
+            }
+
+            // Refresh the user list and statistics
+            await fetchUsers();
+            await fetchStatistics();
+
+            if (action === 'verify') alert(t('owner.users.successVerify'));
+            else if (action === 'block') alert(t('owner.users.successBlock'));
+            else if (action === 'activate') alert(t('owner.users.successActivate'));
+        } catch (err) {
+            console.error(`Error performing ${action}:`, err);
+            alert(`${t('owner.users.errorAction')}: ${err.response?.data?.message || 'Unknown error'}`);
+        }
+    };
+
+    const getUserStatus = (user) => {
+        if (user.status === 'suspended') return t('owner.users.statusValues.suspended');
+        if (user.verified === false && user.role === 'contractor') return t('owner.users.statusValues.pending');
+        return t('owner.users.statusValues.active');
+    };
+
+    const getStatusVariant = (status) => {
+        if (status === t('owner.users.statusValues.active')) return 'success';
+        if (status === t('owner.users.statusValues.pending')) return 'warning';
+        return 'destructive';
+    };
 
     return (
         <div className="space-y-6">
@@ -66,7 +118,7 @@ const UserManagement = () => {
                         <Users className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{clients.length + contractors.length}</div>
+                        <div className="text-2xl font-bold">{statistics?.total_users || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -75,7 +127,7 @@ const UserManagement = () => {
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{contractors.filter(c => !c.verified).length}</div>
+                        <div className="text-2xl font-bold">{statistics?.pending_verifications || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -84,9 +136,7 @@ const UserManagement = () => {
                         <XCircle className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {clients.filter(c => c.status === 'Suspended').length + contractors.filter(c => c.status === 'Suspended').length}
-                        </div>
+                        <div className="text-2xl font-bold">{statistics?.suspended_users || 0}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -95,6 +145,13 @@ const UserManagement = () => {
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setActiveTab('all')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'all' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                            >
+                                {t('owner.users.tabs.all')}
+                            </button>
                             <button
                                 onClick={() => setActiveTab('clients')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'clients' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
@@ -109,6 +166,13 @@ const UserManagement = () => {
                             >
                                 {t('owner.users.contractors')}
                             </button>
+                            <button
+                                onClick={() => setActiveTab('owners')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'owners' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                            >
+                                {t('owner.users.owners')}
+                            </button>
                         </div>
                         <div className="relative w-full md:w-64">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -122,56 +186,79 @@ const UserManagement = () => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('owner.users.name')}</TableHead>
-                                <TableHead>{activeTab === 'clients' ? t('owner.users.type') : t('owner.users.category')}</TableHead>
-                                <TableHead>{t('owner.users.email')}</TableHead>
-                                <TableHead>{t('owner.users.status')}</TableHead>
-                                <TableHead>{activeTab === 'clients' ? t('owner.users.activeTenders') : t('owner.users.credits')}</TableHead>
-                                <TableHead className="text-right">{t('owner.users.actions')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredList.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            {activeTab === 'contractors' && !user.verified && (
-                                                <AlertTriangle className="h-4 w-4 text-amber-500" title="Pending Verification" />
-                                            )}
-                                            {user.name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{activeTab === 'clients' ? user.type : user.category}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.status === 'Active' ? 'success' : user.status === 'Pending' ? 'warning' : 'destructive'}>
-                                            {user.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{activeTab === 'clients' ? user.tenders : user.credits}</TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        {activeTab === 'contractors' && !user.verified && (
-                                            <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'contractors', 'verify')}>
-                                                <CheckCircle className="h-4 w-4 mr-1" /> {t('owner.users.verify')}
-                                            </Button>
-                                        )}
-                                        {user.status !== 'Suspended' ? (
-                                            <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleAction(user.id, activeTab, 'block')}>
-                                                {t('owner.users.block')}
-                                            </Button>
-                                        ) : (
-                                            <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, activeTab, 'activate')}>
-                                                {t('owner.users.activate')}
-                                            </Button>
-                                        )}
-                                    </TableCell>
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12 text-red-600">
+                            <p>{error}</p>
+                            <Button variant="outline" onClick={fetchUsers} className="mt-4">
+                                {t('admin.dashboard.retry')}
+                            </Button>
+                        </div>
+                    ) : users.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            {t('owner.users.noUsers')}
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>{t('owner.users.name')}</TableHead>
+                                    <TableHead>{t('admin.userProfile.table.type')}</TableHead>
+                                    <TableHead>{t('owner.users.email')}</TableHead>
+                                    <TableHead>{t('owner.users.status')}</TableHead>
+                                    <TableHead>{activeTab === 'contractors' ? t('owner.users.credits') : t('owner.users.activeTenders')}</TableHead>
+                                    <TableHead className="text-right">{t('owner.users.actions')}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => {
+                                    const status = getUserStatus(user);
+                                    return (
+                                        <TableRow key={user.id}>
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {activeTab === 'contractors' && !user.verified && (
+                                                        <AlertTriangle className="h-4 w-4 text-amber-500" title={t('owner.users.statusValues.pending')} />
+                                                    )}
+                                                    {user.name}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{user.company_name || (user.role === 'admin' ? t('auth.admin') : user.role === 'contractor' ? t('auth.contractor') : t('auth.owner')) || t('common.na')}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={getStatusVariant(status)}>
+                                                    {status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>{user.role === 'contractor' ? (user.credits?.balance ?? '0') : '0'}</TableCell>
+                                            <TableCell className="text-right space-x-2">
+                                                <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => navigate(`/owner/users/${user.id}`)}>
+                                                    <Eye className="h-4 w-4 mr-1" /> {t('owner.users.viewProfile')}
+                                                </Button>
+                                                {activeTab === 'contractors' && !user.verified && (
+                                                    <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'verify')}>
+                                                        <CheckCircle className="h-4 w-4 mr-1" /> {t('owner.users.verify')}
+                                                    </Button>
+                                                )}
+                                                {status !== 'Suspended' ? (
+                                                    <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleAction(user.id, 'block')}>
+                                                        {t('owner.users.block')}
+                                                    </Button>
+                                                ) : (
+                                                    <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'activate')}>
+                                                        {t('owner.users.activate')}
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

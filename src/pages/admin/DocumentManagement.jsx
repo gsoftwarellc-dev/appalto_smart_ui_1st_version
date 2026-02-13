@@ -1,33 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
-import { Search, FileText, Download, Filter } from 'lucide-react';
+import { Search, FileText, Download, Loader2 } from 'lucide-react';
+import BackendApiService from '../../services/backendApi';
 
 const DocumentManagement = () => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [documents, setDocuments] = useState([]);
 
-    // Mock Documents Data
-    const documents = [
-        { id: 1, name: "BOQ_Roof_ViaRoma.pdf", type: "BOQ", tender: "Roof Renovation - Via Roma 5", contractor: "-", date: "2025-12-15", size: "2.4 MB" },
-        { id: 2, name: "Bid_Roof_ViaRoma_Rossi.pdf", type: "Bid", tender: "Roof Renovation - Via Roma 5", contractor: "Giovanni Rossi", date: "2026-01-20", size: "1.8 MB" },
-        { id: 3, name: "Bid_Roof_ViaRoma_Bianchi.pdf", type: "Bid", tender: "Roof Renovation - Via Roma 5", contractor: "Maria Bianchi", date: "2026-01-21", size: "1.9 MB" },
-        { id: 4, name: "BOQ_Elevator_Milano.pdf", type: "BOQ", tender: "Elevator Maintenance - Via Milano 12", contractor: "-", date: "2026-01-05", size: "3.1 MB" },
-        { id: 5, name: "Bid_Elevator_Rossi.pdf", type: "Bid", tender: "Elevator Maintenance - Via Milano 12", contractor: "Giovanni Rossi", date: "2026-01-22", size: "1.5 MB" },
-    ];
+    useEffect(() => {
+        loadDocuments();
+    }, []);
+
+    const loadDocuments = async () => {
+        try {
+            setLoading(true);
+            // Fetch documents from backend
+            const docs = await BackendApiService.getDocuments();
+            setDocuments(docs || []);
+            setError(null);
+        } catch (error) {
+            console.error("Failed to load documents", error);
+            setError("Failed to load documents.");
+            // Use fallback empty array
+            setDocuments([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = async (docId, fileName) => {
+        try {
+            const blob = await BackendApiService.downloadDocument(docId);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to download document", error);
+            alert("Failed to download document.");
+        }
+    };
 
     const filteredDocuments = documents.filter(doc => {
-        const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doc.tender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doc.contractor.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = doc.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doc.tender_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doc.contractor_name?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = typeFilter === 'All' || doc.type === typeFilter;
         return matchesSearch && matchesType;
     });
+
+    if (loading) return (
+        <div className="p-8 text-center flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -35,6 +74,12 @@ const DocumentManagement = () => {
                 <h2 className="text-3xl font-bold tracking-tight">{t('admin.documentManagement.title')}</h2>
                 <p className="text-gray-500">{t('admin.documentManagement.subtitle')}</p>
             </div>
+
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {error}
+                </div>
+            )}
 
             {/* Search and Filters */}
             <div className="flex flex-col md:flex-row gap-4">
@@ -48,7 +93,7 @@ const DocumentManagement = () => {
                     />
                 </div>
                 <div className="flex gap-2">
-                    {['All', 'BOQ', 'Bid'].map((type) => (
+                    {['All', 'BOQ', 'Bid', 'Contract', 'Other'].map((type) => (
                         <Button
                             key={type}
                             variant={typeFilter === type ? 'default' : 'outline'}
@@ -57,7 +102,7 @@ const DocumentManagement = () => {
                         >
                             {type === 'All' ? t('admin.documentManagement.types.all') :
                                 type === 'BOQ' ? t('admin.documentManagement.types.boq') :
-                                    t('admin.documentManagement.types.bid')}
+                                    type}
                         </Button>
                     ))}
                 </div>
@@ -103,43 +148,56 @@ const DocumentManagement = () => {
             {/* Documents Table */}
             <Card>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('admin.documentManagement.table.name')}</TableHead>
-                                <TableHead>{t('admin.documentManagement.table.type')}</TableHead>
-                                <TableHead>{t('admin.documentManagement.table.tender')}</TableHead>
-                                <TableHead>{t('admin.documentManagement.table.contractor')}</TableHead>
-                                <TableHead>{t('admin.documentManagement.table.date')}</TableHead>
-                                <TableHead>{t('admin.documentManagement.table.size')}</TableHead>
-                                <TableHead className="text-right">{t('admin.documentManagement.table.action')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredDocuments.map((doc) => (
-                                <TableRow key={doc.id}>
-                                    <TableCell className="font-medium flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-gray-400" />
-                                        {doc.name}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={doc.type === 'BOQ' ? 'secondary' : 'outline'}>
-                                            {doc.type}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="max-w-xs truncate">{doc.tender}</TableCell>
-                                    <TableCell>{doc.contractor}</TableCell>
-                                    <TableCell>{doc.date}</TableCell>
-                                    <TableCell>{doc.size}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                            <Download className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
+                    {filteredDocuments.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                            {searchTerm || typeFilter !== 'All'
+                                ? 'No documents match your filters.'
+                                : 'No documents uploaded yet.'}
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>{t('admin.documentManagement.table.name')}</TableHead>
+                                    <TableHead>{t('admin.documentManagement.table.type')}</TableHead>
+                                    <TableHead>{t('admin.documentManagement.table.tender')}</TableHead>
+                                    <TableHead>{t('admin.documentManagement.table.contractor')}</TableHead>
+                                    <TableHead>{t('admin.documentManagement.table.date')}</TableHead>
+                                    <TableHead>{t('admin.documentManagement.table.size')}</TableHead>
+                                    <TableHead className="text-right">{t('admin.documentManagement.table.action')}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredDocuments.map((doc) => (
+                                    <TableRow key={doc.id}>
+                                        <TableCell className="font-medium flex items-center gap-2">
+                                            <FileText className="h-4 w-4 text-gray-400" />
+                                            {doc.name || 'Unnamed Document'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={doc.type === 'BOQ' ? 'secondary' : 'outline'}>
+                                                {doc.type || 'Other'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="max-w-xs truncate">{doc.tender_title || '-'}</TableCell>
+                                        <TableCell>{doc.contractor_name || '-'}</TableCell>
+                                        <TableCell>{doc.created_at ? new Date(doc.created_at).toLocaleDateString() : '-'}</TableCell>
+                                        <TableCell>{doc.size || '-'}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => handleDownload(doc.id, doc.name)}
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

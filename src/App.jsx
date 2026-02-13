@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import Layout from './components/layout/Layout';
 
 // Pages
@@ -17,7 +19,10 @@ import BidManagement from './pages/admin/BidManagement';
 import ContractorManagement from './pages/admin/ContractorManagement';
 import DocumentManagement from './pages/admin/DocumentManagement';
 import AdminProfile from './pages/admin/AdminProfile';
+import ReviewBoq from './pages/admin/ReviewBoq';
+import BidComparison from './pages/admin/BidComparison';
 import TenderDetails from './pages/TenderDetails';
+import BidDetails from './pages/admin/BidDetails';
 
 // Shared Pages
 import Notifications from './pages/Notifications';
@@ -26,7 +31,7 @@ import Notifications from './pages/Notifications';
 import OwnerLayout from './components/layout/OwnerLayout';
 import OwnerDashboard from './pages/owner/Dashboard';
 import UserManagement from './pages/owner/UserManagement';
-import TenderOversight from './pages/owner/TenderOversight';
+import UserProfile from './pages/owner/UserProfile';
 import RevenueDashboard from './pages/owner/RevenueDashboard';
 import AuditLog from './pages/owner/AuditLog';
 import Configuration from './pages/owner/Configuration';
@@ -42,68 +47,74 @@ import Billing from './pages/contractor/Billing';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Login />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/" element={<LandingPage />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['admin', 'contractor']} />}>
-            <Route element={<Layout />}>
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['admin', 'contractor']} />}>
+                <Route element={<Layout />}>
 
-              {/* Admin Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-                <Route path="/admin" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="/admin/create-tender" element={<CreateTender />} />
-                  <Route path="/admin/tenders" element={<TendersList />} />
-                  <Route path="/admin/bids" element={<BidManagement />} />
-                  <Route path="/admin/contractors" element={<ContractorManagement />} />
-                  <Route path="/admin/documents" element={<DocumentManagement />} />
-                  <Route path="/admin/notifications" element={<Notifications />} />
-                  <Route path="/admin/profile" element={<AdminProfile />} />
+                  {/* Admin Routes */}
+                  <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                    <Route path="/admin" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="/admin/create-tender" element={<CreateTender />} />
+                      <Route path="/admin/edit-tender/:id" element={<CreateTender />} />
+                      <Route path="/admin/tenders" element={<TendersList />} />
+                      <Route path="/admin/bids" element={<BidManagement />} />
+                      <Route path="/admin/contractors" element={<ContractorManagement />} />
+                      <Route path="/admin/documents" element={<DocumentManagement />} />
+                      <Route path="/admin/notifications" element={<Notifications />} />
+                      <Route path="/admin/profile" element={<AdminProfile />} />
+                    </Route>
+                    <Route path="/admin/tenders/:id" element={<TenderDetails />} />
+                    <Route path="/admin/tenders/:id/boq-review" element={<ReviewBoq />} />
+                    <Route path="/admin/tenders/:id/compare" element={<BidComparison />} />
+                    <Route path="/admin/bids/:id" element={<BidDetails />} />
+                  </Route>
+
+                  {/* Contractor Routes */}
+                  <Route element={<ProtectedRoute allowedRoles={['contractor']} />}>
+                    <Route path="/contractor" element={<ContractorDashboard />} />
+                    <Route path="/contractor/tenders" element={<ActiveTenders />} />
+                    <Route path="/contractor/bids" element={<MyBids />} />
+                    <Route path="/contractor/documents" element={<DocumentCenter />} />
+                    <Route path="/contractor/notifications" element={<Notifications />} />
+                    <Route path="/contractor/billing" element={<Billing />} />
+                    <Route path="/contractor/profile" element={<Profile />} />
+                    <Route path="/contractor/tenders/:id" element={<TenderDetails />} />
+                  </Route>
+
                 </Route>
-                <Route path="/admin/tenders/:id" element={<TenderDetails />} />
               </Route>
 
-              {/* Contractor Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['contractor']} />}>
-                <Route path="/contractor" element={<ContractorDashboard />} />
-                <Route path="/contractor/tenders" element={<ActiveTenders />} />
-                <Route path="/contractor/bids" element={<MyBids />} />
-                <Route path="/contractor/documents" element={<DocumentCenter />} />
-                <Route path="/contractor/notifications" element={<Notifications />} />
-                <Route path="/contractor/billing" element={<Billing />} />
-                <Route path="/contractor/profile" element={<Profile />} />
-                <Route path="/contractor/tenders/:id" element={<TenderDetails />} />
+              {/* Owner Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['owner']} />}>
+                <Route path="/owner" element={<OwnerLayout />}>
+                  <Route index element={<OwnerDashboard />} />
+                  <Route path="/owner/users" element={<UserManagement />} />
+                  <Route path="/owner/users/:id" element={<UserProfile />} />
+                  <Route path="/owner/revenue" element={<RevenueDashboard />} />
+                  <Route path="/owner/audit" element={<AuditLog />} />
+                  <Route path="/owner/config" element={<Configuration />} />
+                  <Route path="/owner/notifications" element={<NotificationControl />} />
+                </Route>
               </Route>
 
-
-
-            </Route>
-          </Route>
-
-          {/* Owner Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['owner']} />}>
-            <Route path="/owner" element={<OwnerLayout />}>
-              <Route index element={<OwnerDashboard />} />
-              <Route path="/owner/users" element={<UserManagement />} />
-              <Route path="/owner/tenders" element={<TenderOversight />} />
-              <Route path="/owner/revenue" element={<RevenueDashboard />} />
-              <Route path="/owner/audit" element={<AuditLog />} />
-              <Route path="/owner/config" element={<Configuration />} />
-              <Route path="/owner/notifications" element={<NotificationControl />} />
-            </Route>
-          </Route>
-
-          {/* Root Redirect */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </NotificationProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
